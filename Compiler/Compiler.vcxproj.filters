@@ -41,5 +41,11 @@
     <ClCompile Include="Compiler.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Token_scanner.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Functions.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

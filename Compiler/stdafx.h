@@ -9,6 +9,11 @@
 
 #include <stdio.h>
 #include <tchar.h>
+#include <deque>
+#include <iostream>
+#include <fstream>
+#include <ctype.h>
+#include <string>
 
 
 

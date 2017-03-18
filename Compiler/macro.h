@@ -1,24 +1,21 @@
 #pragma once
-//保留字
-#define		BREAK		1
-#define		CHAR		2
-#define		CONTINUE	3
-#define		ELSE		4
-#define		FOR			5
-#define		GOTO		6
-#define		IF			7
-#define		INT			8
-#define		RETURN		9
-#define		WHILE		10
-//类型
-#define		ID			11
-#define		CHAR		12
-#define		INT			13
+//关键字
+#define		BREAK		0
+#define		CONTINUE	0
+#define		ELSE		0
+#define		FOR			0
+#define		IF			0
+#define		RETURN		0
+#define		WHILE		0
+#define		CHAR		0
+#define		INT			0
+//标识符
+#define		ID			0
 //运算符
-#define		PLUS		14 // +
-#define		MINUS		15 // -
-#define		MULTI		16 // *
-#define		RDIV		17 // /
+#define		PLUS		0 // +
+#define		MINUS		0 // -
+#define		MULTI		0 // *
+#define		RDIV		0 // /
 #define		MOD			0 // %
 #define		INC			0 // ++
 #define		DEC			0 // --
@@ -48,4 +45,4 @@
 #define		COMMA		0 // ,
 #define		POUND		0 // #
 #define		ADDRESS		0 // &
-#define		COLON		0 // :
+#define		FSTOP		0 // .
