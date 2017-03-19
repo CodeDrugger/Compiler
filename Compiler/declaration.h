@@ -8,6 +8,8 @@ public:
 	char ch;
 	char token[32];
 	bool which_emtpy;
+	bool error;
+	bool dq_mark;
 	std::ifstream ifs;
 	std::deque<Token_Stream*> token_stream;
 	std::deque<Token_List*> token_list;
@@ -15,6 +17,16 @@ public:
 	token_scanner();
 	void prepare();
 	void buffer_scanner();
+	void token_install(int macrocode, int value, std::string &s, int mode);
+	std::string gettoken();
+	void error_handler(std::string msg);
+	void goahead(bool &isend);
+	void movebegin();
+	char getfchar(int dis);
+	int getbfdis();
+	std::string getstring();
 };
 
-bool iskeyword(std::string s);
+int wordclassify(std::string s);
+bool isescape(char c);
+char toescape(char c);

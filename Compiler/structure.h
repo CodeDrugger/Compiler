@@ -10,6 +10,6 @@ struct Token_Stream
 //·ûºÅ±íÏî
 struct Token_List
 {
-	char name[32];
+	std::string name;
 	void * value;
 };

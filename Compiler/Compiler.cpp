@@ -8,6 +8,7 @@ int main()
 {
 	token_scanner ts;
 	ts.prepare();
+	ts.buffer_scanner();
     return 0;
 }
 

@@ -14,6 +14,7 @@
 #include <fstream>
 #include <ctype.h>
 #include <string>
+#include <stack>
 
 
 
