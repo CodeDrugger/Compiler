@@ -9,7 +9,6 @@
 #define		WHILE		6
 #define		CHAR		7
 #define		INT			8
-///////////include
 //标识符
 #define		ID			9
 //运算符
@@ -51,3 +50,7 @@
 #define		B4			41 // int类型的常量
 #define		B1			42 // char类型的常量
 #define		STR			43 // char[]类型的常量
+#define		HEADER		44 // 头文件的文件名
+//关键字补充
+#define		INCLUDE		45
+#define		MAIN		46

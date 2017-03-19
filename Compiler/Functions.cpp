@@ -20,6 +20,10 @@ int wordclassify(string s)
 		return RETURN;
 	else if (s == "while")
 		return WHILE;
+	else if (s == "include")
+		return INCLUDE;
+	else if (s == "main")
+		return MAIN;
 	else
 		return ID;
 }

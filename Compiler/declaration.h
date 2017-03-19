@@ -25,6 +25,7 @@ public:
 	char getfchar(int dis);
 	int getbfdis();
 	std::string getstring();
+	void show();
 };
 
 int wordclassify(std::string s);

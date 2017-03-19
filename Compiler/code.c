@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 int main()
 {
 	int abc = 2;

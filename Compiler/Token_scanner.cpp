@@ -255,6 +255,20 @@ void token_scanner::buffer_scanner()
 						goahead(isend);
 						token_install(NE, 0, useless, 2);
 					}
+					else if (isalpha(*forward))
+					{
+						goahead(isend);
+						while (isalpha(*forward) || *forward == '.')
+						{
+							goahead(isend);
+							if (*forward == '>')
+								break;
+						}
+						string s = getstring();
+						//子串
+						goahead(isend);
+						token_install(HEADER, 0, s, 0);
+					}
 					else token_install(LT, 0, useless, 2);
 					movebegin();
 					break;
@@ -315,39 +329,39 @@ void token_scanner::buffer_scanner()
 					q_mark = !q_mark;
 					if (q_mark)//从尾开始
 					{
-						if (getfchar(2) != '\'' && getfchar(2) != '\\')
+						if (getfchar(3) != '\'' && getfchar(3) != '\\')
 						{
 							string s = "单引号不匹配，错误发生在以下代码附近:";
 							error_handler(s);
 							return;
 						}
-						if (getfchar(1) == '\\')
-						{
-							q_mark = !q_mark;
-							if (*(forward + 1) != '\'')
-							{
-								string s = "单引号不匹配，错误发生在以下代码附近:";
-								error_handler(s);
-								return;
-							}
-						}
 						if (getfchar(2) == '\\')
 						{
-							if (getfchar(1) != '\'' && getfchar(1) != '\\' && !isescape(getfchar(1)))
+							q_mark = !q_mark;
+							if (*(forward) != '\'')
 							{
 								string s = "单引号不匹配，错误发生在以下代码附近:";
 								error_handler(s);
 								return;
 							}
 						}
-						if (q_mark)
+						if (getfchar(3) == '\\')
 						{
-							if (getfchar(2) == '\'')
-								token_install(B1, (int)getfchar(1), useless, 2);
-							else if (getfchar(2) == '\'')
+							if (getfchar(2) != '\'' && getfchar(2) != '\\' && !isescape(getfchar(2)))
 							{
-								if (isescape(getfchar(1)) || getfchar(1) == '\\' || getfchar(1) == '\'')
-									token_install(B1, toescape(getfchar(1)), useless, 2);
+								string s = "单引号不匹配，错误发生在以下代码附近:";
+								error_handler(s);
+								return;
+							}
+						}
+						if (q_mark)//'a'+'b'+'/''
+						{
+							if (getfchar(3) == '\'')
+								token_install(B1, (int)getfchar(2), useless, 2);
+							else if (getfchar(3) == '\\')
+							{
+								if (isescape(getfchar(2)) || getfchar(2) == '\\' || getfchar(2) == '\'')
+									token_install(B1, toescape(getfchar(2)), useless, 2);
 							}
 							else
 							{
@@ -356,6 +370,7 @@ void token_scanner::buffer_scanner()
 								return;
 							}
 						}
+
 					}
 					else goahead(isend);
 					movebegin();
@@ -424,12 +439,13 @@ void token_scanner::buffer_scanner()
 string token_scanner::getstring()
 {
 	char * str = new char[getbfdis() + 1];
+	memset(str, 0, getbfdis() + 1);
 	char * p = str;
 	for (char * scpy = begin; scpy != forward; scpy++)
 	{
 		if (scpy > dbuffer + 1023)
 			scpy = dbuffer;
-		if (*scpy > 0xfc)
+		if (*scpy > 0)
 		{
 			*p = *scpy;
 			p++;
@@ -447,7 +463,7 @@ string token_scanner::gettoken()
 	{
 		if (tokencpy > dbuffer + 1023)
 			tokencpy = dbuffer;
-		if (*tokencpy < 0xfc)
+		if (*tokencpy > 0)
 		{
 			token[i] = *tokencpy;
 			i++;
@@ -486,7 +502,7 @@ void token_scanner::error_handler(string msg)
 	int times = 0;
 	while (ep >= dbuffer)
 	{
-		if (*ep > 0xfc) break;
+		if (*ep < 0) break;
 		tmp += *ep;
 		if (isspace(*ep))
 		{
@@ -506,14 +522,14 @@ void token_scanner::goahead(bool &isend)
 {
 	if (forward < dbuffer + 1024)
 		forward++;
-	if (*forward == 0xff)
+	if (*forward == -1)
 	{
 		isend = 1;
 		return;
 	}
-	else if (*forward == 0xfe)
+	else if (*forward == -2)
 		forward = dbuffer;
-	else if (*forward == 0xfd)
+	else if (*forward == -3)
 		forward++;
 }
 
@@ -531,14 +547,12 @@ char token_scanner::getfchar(int dis)
 {
 	if (forward - dis < dbuffer)
 	{
-		if (forward + 1024 - dis < begin)
-			return 0xfc;
-		else if (forward + 1024 - dis == dbuffer + 1023)
+		if (forward + 1024 - dis == dbuffer + 1023)
 			return *(forward + 1024 - dis - 1);
 		else return *(forward + 1024 - dis);
 	}
-	else if (forward - dis < begin)
-		return 0xfc;
+	/*else if (forward - dis < begin)
+		return 0xfc;*/
 	else if (forward - dis == dbuffer + 511)
 		return *(forward - dis - 1);
 	else return *(forward - dis);
@@ -550,4 +564,18 @@ int token_scanner::getbfdis()
 	if (tmp < 0)
 		tmp += 1024;
 	return tmp;
+}
+
+void token_scanner::show()
+{
+	cout << "二元组" << endl;
+	for (int i = 0; i < token_stream.size(); i++)
+	{
+		cout << token_stream.at(i)->macrocode << "  " << token_stream.at(i)->attribute << endl;
+	}
+	cout << "符号表" << endl;
+	for (int i = 0; i < token_list.size(); i++)
+	{
+		cout << &(token_list.at(i)->name) << "  " << token_list.at(i)->name << endl;
+	}
 }
