@@ -30,7 +30,7 @@ int wordclassify(string s)
 
 bool isescape(char c)
 {
-	if (c == 0 || (c > 6 && c < 14) || c == 27)
+	if (c == 0 || c == 'a' || c == 'b' || c == 't' || c == 'n' || c == 'v' || c == 'f' || c == 'r' || c == 'e')
 		return true;
 	else return false;
 }

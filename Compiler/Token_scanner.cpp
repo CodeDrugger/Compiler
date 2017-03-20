@@ -26,8 +26,6 @@ void token_scanner::prepare()
 		ifs.get(*buffer_writer);
 		if (*buffer_writer == 0)
 		{
-			*(dbuffer + 511) = 0xfd;
-			*(dbuffer + 1023) = 0xfe;
 			*buffer_writer = 0xff;
 			break;
 		}
@@ -54,14 +52,22 @@ void token_scanner::prepare()
 				do
 				{
 					ifs.get(c);
+					if (c == -1)
+					{
+						string s = "注释不封闭，错误发生在以下代码附近:";
+						error_handler(s);
+						return;
+					}
 				} while (!(c == '*' && ifs.peek() == '/'));
 			}
 			buffer_writer--;
+			i--;
 		}
 		i++;
 		buffer_writer++;
 	}
-	return;
+	*(dbuffer + 511) = 0xfd;
+	*(dbuffer + 1023) = 0xfe;
 }
 
 void token_scanner::buffer_scanner()
@@ -70,16 +76,27 @@ void token_scanner::buffer_scanner()
 	forward = dbuffer;
 	bool isend = 0;
 	bool q_mark = 1;
-	bool bbq_mark = 1;
+	//bool bbq_mark = 1;
 	bool isinstr = 0;
 	string useless;
+	string msg;
 	stack<bool> s_brac, m_brac, l_brac;
 	while (!isend)
 	{
 		if (!isinstr)
 		{
-			if (isalpha(*forward))
+			if (isspace(*forward))
 			{
+				goahead(isend);
+				movebegin();
+			}
+			else if (isalpha(*forward))
+			{
+				if (getfchar(1) == '\\')
+				{
+					goahead(isend);
+					continue;
+				}
 				goahead(isend);
 				while (isalnum(*forward))
 				{
@@ -92,7 +109,7 @@ void token_scanner::buffer_scanner()
 				}
 				if (error)
 				{
-					string msg = "标识符长度过长，错误发生在以下代码附近:";
+					msg = "标识符长度过长，错误发生在以下代码附近:";
 					error_handler(msg);
 					return;
 				}
@@ -123,13 +140,13 @@ void token_scanner::buffer_scanner()
 						}
 						if (error)
 						{
-							string msg = "常量长度过长，错误发生在以下代码附近:";
+							msg = "常量长度过长，错误发生在以下代码附近:";
 							error_handler(msg);
 							return;
 						}
 						string s = gettoken();
 						movebegin();
-						token_install(B4, atoi(s.c_str()), useless, 2);
+						token_install(B4, strtol(s.c_str(),0,16), useless, 2);
 					}
 					else
 					{
@@ -151,7 +168,7 @@ void token_scanner::buffer_scanner()
 					}
 					if (error)
 					{
-						string msg = "常量长度过长，错误发生在以下代码附近:";
+						msg = "常量长度过长，错误发生在以下代码附近:";
 						error_handler(msg);
 						return;
 					}
@@ -159,11 +176,6 @@ void token_scanner::buffer_scanner()
 					movebegin();
 					token_install(B4, atoi(s.c_str()), useless, 2);
 				}
-			}
-			else if (isspace(*forward))
-			{
-				goahead(isend);
-				movebegin();
 			}
 			else
 			{
@@ -217,7 +229,7 @@ void token_scanner::buffer_scanner()
 					}
 					else
 					{
-						string msg = "非法符号'|'，错误发生在以下代码附近:";
+						msg = "非法符号'|'，错误发生在以下代码附近:";
 						error_handler(msg);
 						return;
 					}
@@ -265,7 +277,7 @@ void token_scanner::buffer_scanner()
 								break;
 						}
 						string s = getstring();
-						//子串
+						s = s.substr(1);
 						goahead(isend);
 						token_install(HEADER, 0, s, 0);
 					}
@@ -329,34 +341,40 @@ void token_scanner::buffer_scanner()
 					q_mark = !q_mark;
 					if (q_mark)//从尾开始
 					{
-						if (getfchar(3) != '\'' && getfchar(3) != '\\')
+						//任何正确的单引号，其-2字符必须是引号或反斜杠，否则出错
+						if (getfchar(3) != '\'' && getfchar(3) != '\\')//'a'+'b'+'\''+'\\'
 						{
-							string s = "单引号不匹配，错误发生在以下代码附近:";
-							error_handler(s);
+							msg = "单引号不匹配，错误发生在以下代码附近:";
+							error_handler(msg);
 							return;
 						}
-						if (getfchar(2) == '\\')
+						//对于字符引号，其-1字符是反斜杠，-2字符是引号
+						if (getfchar(2) == '\\' && getfchar(3) == '\'')//'a'+'b'+'\(')'+'\\'
 						{
 							q_mark = !q_mark;
+							//任何字符引号，其+1字符是引号，否则出错
 							if (*(forward) != '\'')
 							{
-								string s = "单引号不匹配，错误发生在以下代码附近:";
-								error_handler(s);
+								msg = "单引号不匹配，错误发生在以下代码附近:";
+								error_handler(msg);
 								return;
 							}
 						}
-						if (getfchar(3) == '\\')
+						//对于转义字符末的引号，其-2字符是反斜杠
+						else if (getfchar(3) == '\\')//'a'+'b'+'\''+'\\(')+'\n(')+'\'(')
 						{
+							//任何正确的转义字符末的引号，其-1字符必须是引号、反斜杠或转义符，否则出错
 							if (getfchar(2) != '\'' && getfchar(2) != '\\' && !isescape(getfchar(2)))
 							{
-								string s = "单引号不匹配，错误发生在以下代码附近:";
-								error_handler(s);
+								msg = "单引号不匹配，错误发生在以下代码附近:";
+								error_handler(msg);
 								return;
 							}
 						}
-						if (q_mark)//'a'+'b'+'/''
+						//字符末的引号
+						if (q_mark)//'a'+'b'+'\''+'\\'
 						{
-							if (getfchar(3) == '\'')
+							if (getfchar(3) == '\'')//正常的引号
 								token_install(B1, (int)getfchar(2), useless, 2);
 							else if (getfchar(3) == '\\')
 							{
@@ -365,20 +383,21 @@ void token_scanner::buffer_scanner()
 							}
 							else
 							{
-								string s = "无法识别的转义字符，错误发生在以下代码附近:";
-								error_handler(s);
+								msg = "无法识别的转义字符，错误发生在以下代码附近:";
+								error_handler(msg);
 								return;
 							}
 						}
 
 					}
-					else goahead(isend);
+					else 
+						goahead(isend);
 					movebegin();
 					break;
 				case '"':
 					goahead(isend);
-					token_install(DQ_MARK, 0, useless, 2);
-					bbq_mark = !bbq_mark;
+					//token_install(DQ_MARK, 0, useless, 2);
+					/*bbq_mark = !bbq_mark;
 					if (bbq_mark)//从wei开始
 					{
 						if (getfchar(1) == '\\')
@@ -394,7 +413,9 @@ void token_scanner::buffer_scanner()
 					{
 						isinstr = !isinstr;
 						movebegin();
-					}
+					}*/
+					isinstr = !isinstr;
+					movebegin();
 					break;
 				case '\\':
 					goahead(isend);
@@ -419,14 +440,20 @@ void token_scanner::buffer_scanner()
 		}
 		else
 		{
-			goahead(isend);
-			if (getbfdis() > 512)
+			if (getbfdis() > 511)
 			{
-				string s = "字符串长度过长，错误发生在以下代码附近:";
-				error_handler(s);
+				msg = "字符串长度过长，错误发生在以下代码附近:";
+				error_handler(msg);
+				return;
 			}
-		}
-			
+			if (*forward == '"' && getfchar(1) != '\\')
+			{
+				isinstr = !isinstr;
+				string s = getstring();
+				token_install(STR, 0, s, 0);
+			}				
+			goahead(isend);
+		}			
 	}
 	if (!s_brac.empty())
 		cout << "小括号不匹配" << endl;
@@ -452,6 +479,7 @@ string token_scanner::getstring()
 		}
 	}
 	string s = str;
+	delete[] str;
 	return s;
 }
 
@@ -495,7 +523,7 @@ void token_scanner::token_install(int macrocode, int value, string &s, int mode)
 	token_stream.push_back(ts);
 }
 
-void token_scanner::error_handler(string msg)
+void token_scanner::error_handler(string &msg)
 {
 	char * ep = forward;
 	string tmp;
@@ -516,6 +544,7 @@ void token_scanner::error_handler(string msg)
 		msg += tmp[i];
 	}
 	cout << msg << endl;
+	msg = "";
 }
 
 void token_scanner::goahead(bool &isend)
@@ -528,19 +557,26 @@ void token_scanner::goahead(bool &isend)
 		return;
 	}
 	else if (*forward == -2)
+	{
 		forward = dbuffer;
+		this->prepare();
+	}
 	else if (*forward == -3)
+	{
 		forward++;
+		this->prepare();
+	}
+		
 }
 
 void token_scanner::movebegin()
 {
-	char * oldpos = begin;
+	//char * oldpos = begin;
 	begin = forward;
-	if (oldpos < dbuffer + 511 && begin > dbuffer + 511)
+	/*if (oldpos < dbuffer + 511 && begin > dbuffer + 511)
 		this->prepare();
 	else if (begin < oldpos)
-		this->prepare();
+		this->prepare();*/
 }
 
 char token_scanner::getfchar(int dis)

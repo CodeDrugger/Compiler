@@ -19,7 +19,7 @@ public:
 	void buffer_scanner();
 	void token_install(int macrocode, int value, std::string &s, int mode);
 	std::string gettoken();
-	void error_handler(std::string msg);
+	void error_handler(std::string &msg);
 	void goahead(bool &isend);
 	void movebegin();
 	char getfchar(int dis);
