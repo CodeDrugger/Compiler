@@ -1,11 +1,11 @@
-//这里是大类及常用函数的申明
+//这里是大类及常用函数、全局变量的申明
 #pragma once
 class token_scanner
 {
 public:
 	char dbuffer[1024];
-	char *begin, *forward,*buffer_writer;
-	char ch;
+	char *begin, *forward, *buffer_writer;
+	//char ch;
 	char token[32];
 	bool which_emtpy;
 	bool error;
@@ -26,6 +26,23 @@ public:
 	int getbfdis();
 	std::string getstring();
 	void show();
+	void excute();
+	~token_scanner();
+};
+
+class syntax_analyser
+{
+public:
+	std::ifstream ifs;
+	std::vector<Production*> production_list;
+	std::vector<std::string*> nsmap;
+	std::map<std::string, int> snmap;
+	std::map<int, std::vector<int>*> first_set;
+
+	syntax_analyser();
+	void production_reader();
+	void getfirst();
+	//~syntax_analyser();
 };
 
 int wordclassify(std::string s);

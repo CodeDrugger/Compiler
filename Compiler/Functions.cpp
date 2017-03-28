@@ -20,8 +20,6 @@ int wordclassify(string s)
 		return RETURN;
 	else if (s == "while")
 		return WHILE;
-	else if (s == "include")
-		return INCLUDE;
 	else if (s == "main")
 		return MAIN;
 	else
@@ -63,9 +61,6 @@ char toescape(char c)
 		break;
 	case 'r':
 		tmp = '\r';
-		break;
-	case 'e':
-		tmp = '\e';
 		break;
 	case '\'':
 		tmp = '\'';

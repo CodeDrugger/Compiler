@@ -43,14 +43,16 @@
 #define		DQ_MARK		35 // "
 #define		B_SLANT		36 /* \ */
 #define		COMMA		37 // ,
-#define		POUND		38 // #
+/*#define		POUND		38 // #
 #define		ADDRESS		39 // &
-#define		FSTOP		40 // .
+#define		FSTOP		40 // .*/
 //常量
-#define		B4			41 // int类型的常量
-#define		B1			42 // char类型的常量
-#define		STR			43 // char[]类型的常量
-#define		HEADER		44 // 头文件的文件名
+#define		B4			38 // int类型的常量
+#define		B1			39 // char类型的常量
+#define		STR			40 // char[]类型的常量
+//#define		HEADER		41 // 头文件的文件名
 //关键字补充
-#define		INCLUDE		45
-#define		MAIN		46
+#define		MAIN		41
+#define		PRINTF		42
+//终结符数量
+#define		MACRONUM	43

@@ -217,7 +217,7 @@ void token_scanner::buffer_scanner()
 						goahead(isend);
 						token_install(AND, 0, useless, 2);
 					}
-					else token_install(ADDRESS, 0, useless, 2);
+					//else token_install(ADDRESS, 0, useless, 2);
 					movebegin();
 					break;
 				case '|':
@@ -267,7 +267,7 @@ void token_scanner::buffer_scanner()
 						goahead(isend);
 						token_install(NE, 0, useless, 2);
 					}
-					else if (isalpha(*forward))
+					/*else if (isalpha(*forward))
 					{
 						goahead(isend);
 						while (isalpha(*forward) || *forward == '.')
@@ -280,7 +280,7 @@ void token_scanner::buffer_scanner()
 						s = s.substr(1);
 						goahead(isend);
 						token_install(HEADER, 0, s, 0);
-					}
+					}*/
 					else token_install(LT, 0, useless, 2);
 					movebegin();
 					break;
@@ -425,7 +425,7 @@ void token_scanner::buffer_scanner()
 					token_install(COMMA, 0, useless, 2);
 					movebegin();
 					break;
-				case '#':
+				/*case '#':
 					goahead(isend);
 					token_install(POUND, 0, useless, 2);
 					movebegin();
@@ -434,7 +434,7 @@ void token_scanner::buffer_scanner()
 					goahead(isend);
 					token_install(FSTOP, 0, useless, 2);
 					movebegin();
-					break;
+					break;*/
 				}
 			}
 		}
@@ -614,4 +614,16 @@ void token_scanner::show()
 	{
 		cout << &(token_list.at(i)->name) << "  " << token_list.at(i)->name << endl;
 	}
+}
+
+void token_scanner::excute()
+{
+	this->prepare();
+	this->buffer_scanner();
+	this->show();
+}
+
+token_scanner::~token_scanner()
+{
+	ifs.close();
 }

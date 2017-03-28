@@ -6,10 +6,10 @@ using namespace std;
 
 int main()
 {
-	token_scanner ts;
-	ts.prepare();
-	ts.buffer_scanner();
-	ts.show();
+	/*token_scanner ts;
+	ts.excute();*/
+	syntax_analyser sa;
+	sa.production_reader();
     return 0;
 }
 
