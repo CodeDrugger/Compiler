@@ -10,6 +10,7 @@ int main()
 	ts.excute();*/
 	syntax_analyser sa;
 	sa.production_reader();
+	sa.getfirst();
     return 0;
 }
 

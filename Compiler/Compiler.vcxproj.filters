@@ -47,7 +47,7 @@
     <ClCompile Include="Functions.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Synatx_analyser.cpp">
+    <ClCompile Include="Syntax_analyser.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

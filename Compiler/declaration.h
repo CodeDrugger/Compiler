@@ -37,7 +37,7 @@ public:
 	std::vector<Production*> production_list;
 	std::vector<std::string*> nsmap;
 	std::map<std::string, int> snmap;
-	std::map<int, std::vector<int>*> first_set;
+	std::map<int, std::set<int>*> first_set;
 
 	syntax_analyser();
 	void production_reader();

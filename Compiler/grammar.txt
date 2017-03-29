@@ -1,17 +1,17 @@
 ^ Typ -> $INT | $CHAR @
 ^ Exp -> + Exp | - Exp | Exp + Exp | Exp * Exp | Exp / Exp | Exp % Exp | Exp ++ | Exp -- | $B4 | $B1 | ( Exp ) | Exp && Exp | Exp || Exp | ! Exp | Exp < Exp | Exp <= Exp | Exp > Exp | Exp >= Exp | Exp != Exp | Exp <> Exp @
-^ Dec -> Typ Ass @
-^ Ass -> As1 | As2 @
 ^ As1 -> $ID = Exp ; | $ID ; @
-^ As2 -> $ID [ $B4 ] ; | $ID [ ] = Lst ; | $ID [ $B4 ] = Lst ; | $ID [ ] = $STR ; | $ID [ $B4 ] = $STR ; @
 ^ Tup -> Exp , Tup | Exp @
 ^ Lst -> { Tup } ; @
-^ Ifb -> $IF ( Exp ) { Sta } | $IF ( Exp ) { Sta } $ELSE { Sta } | $IF ( Exp ) { Sta } Eif $ELSE { Sta } @
+^ As2 -> $ID [ $B4 ] ; | $ID [ ] = Lst ; | $ID [ $B4 ] = Lst ; | $ID [ ] = $STR ; | $ID [ $B4 ] = $STR ; @
+^ Ass -> As1 | As2 @
+^ Dec -> Typ Ass @
+^ Sta -> Dec | Ass | Exp ; | Ifb | Fob | Whb | Ret | ; | Sta Sta @
 ^ Eif -> $ELSE $IF ( Exp ) { Sta } | Eif @
+^ Ifb -> $IF ( Exp ) { Sta } | $IF ( Exp ) { Sta } $ELSE { Sta } | $IF ( Exp ) { Sta } Eif $ELSE { Sta } @
+^ Stl -> Sta | $CONTINUE ; | $BREAK ; @
 ^ Fob -> $FOR ( Ass ; Exp ; Exp ) { Stl } | $FOR ( Ass ; Exp ; Exp ) Stl @
 ^ Whb -> $WHILE ( Exp ) { Stl } | $WHILE ( Exp ) Stl @
 ^ Ret -> $RETURN Exp ; @
-^ Stl -> Sta | $CONTINUE ; | $BREAK ; @
-^ Sta -> Dec | Ass | Exp ; | Ifb | Fob | Whb | Ret | ; |  Sta Sta @
 ^ Vls -> Typ $ID | Typ $ID , Vls @
 ^ S -> Typ $MAIN ( Vls ) { Sta Ret } @
