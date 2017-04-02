@@ -42,6 +42,8 @@ public:
 	syntax_analyser();
 	void production_reader();
 	void getfirst();
+	Ep_Closure* getclosure(Ep_Closure* ep);
+	Ep_Closure* go(Ep_Closure* ep,int x);
 	//~syntax_analyser();
 };
 

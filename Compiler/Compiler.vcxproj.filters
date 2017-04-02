@@ -50,5 +50,8 @@
     <ClCompile Include="Syntax_analyser.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="SF_realization.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

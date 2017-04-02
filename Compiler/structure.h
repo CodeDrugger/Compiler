@@ -19,26 +19,34 @@ class Production
 public:
 	std::vector<int> production;
 	int hash;
-	Production() { hash = 0; }
+	Production();
 };
 //LR1项目，形如[A->B.S,a]
-struct LR1_Item
+class LR1_Item
 {
+public:
 	int hash;
-	std::vector<int> production;
+	int hash_s;//展望符的hash
+	std::vector<int> production;//应该是单个的
 	std::vector<int> symbol;
-	int * pos;
+	std::vector<int>::iterator pos;//表示点在当前字符的后一位
+
+	LR1_Item();
+	LR1_Item* copy(LR1_Item*);
 };
 //闭包集，即DFA的状态I
 class Ep_Closure
 {
 public:
-	int hash;
-	int * hash_set;
+	int hash;//自己的hash
+	std::vector<int> hash_set;//所包含的LR1项目的hash，便于判断某LR1项目是否在其中
+	std::vector<int> hash_set_s;
 	int item_num;
 	std::vector<LR1_Item*> LR1_items;
 
-	bool have_item(LR1_Item &item);
+	Ep_Closure();
+	void add_item(LR1_Item* item);
+	int have_item(LR1_Item &item);
 	bool equal(Ep_Closure &ec);
 };
 

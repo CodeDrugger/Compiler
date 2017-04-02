@@ -141,3 +141,107 @@ void syntax_analyser::getfirst()
 		}
 	}
 }
+
+Ep_Closure* syntax_analyser::getclosure(Ep_Closure* ep)
+{
+	/*ep->LR1_items.push_back(item);
+	ep->hash_set.push_back(item->hash);
+	ep->item_num++;
+	ep->hash_set_s.push_back(item->hash_s);*/
+	int itnum = ep->item_num;
+	vector<LR1_Item*> * p = &(ep->LR1_items);
+	vector<int> * q = NULL, *t = NULL;
+	vector<int>::iterator it;
+	do
+	{	
+		for (int i = 0; i < p->size(); i++)
+		{
+			q = &(p->at(i)->production);
+			t = &(p->at(i)->symbol);
+			it = p->at(i)->pos;
+			if (it == q->end() - 1) continue;
+			it++;
+			if (*it >= MACRONUM)
+			{
+				Production * s = NULL;
+				for (int j = 0; j < production_list.size(); j++)
+				{
+					if (production_list[j]->production[0] == *it)
+					{
+						s = production_list[j];
+						break;
+					}
+				}
+				set<int>* first = first_set.find(*it - MACRONUM)->second;
+				LR1_Item * lr = NULL;
+				vector<int>::iterator start, end;
+				for (set<int>::iterator i = first->begin(); i != first->end(); i++)
+				{
+					start = s->production.begin();
+					end = start;
+					while (true)
+					{
+						start++;
+						if (*start == -1)
+						{
+							start++;
+							end = start;
+						}
+						else if (*start == -2 && start == s->production.end())
+						{
+							lr = new LR1_Item;
+							lr->production.push_back(*it);
+							lr->production.push_back(-1);
+							lr->pos = lr->production.begin() + 1;
+							lr->hash += (*it - 1);
+							while (end != start)
+							{
+								lr->production.push_back(*end);
+								lr->hash += *end;
+								end++;
+							}
+							lr->symbol.push_back(*i);
+							lr->hash_s += (*i);
+							int exist = ep->have_item(*lr);
+							if (exist == -1)//不存在
+								ep->add_item(lr);
+							else if(exist == 0)//存在
+								delete lr;
+							else//心存在，展望符不存在
+							{
+								LR1_Item* r = ep->LR1_items[exist];
+								r->symbol.push_back(*i);
+								r->hash_s += (*i);
+								delete lr;
+							}
+							if (end == s->production.end()) break;
+						}
+					}
+				}
+			}
+		}
+	} while (itnum != ep->item_num);
+	return ep;
+}
+
+Ep_Closure* syntax_analyser::go(Ep_Closure* ep, int x)
+{
+	Ep_Closure * epc = new Ep_Closure;//J
+	vector<LR1_Item*>* lr = &(ep->LR1_items);
+	vector<int>* p = NULL;
+	for (vector<LR1_Item*>::iterator it = lr->begin(); it != lr->end(); it++)
+	{
+		p = &((*it)->production);
+		for (vector<int>::iterator i = p->begin();i != p->end();i++)
+		{
+			if (*i == x)
+			{
+				LR1_Item* q = NULL;
+				q->copy(*it);
+				q->pos++;
+				epc->add_item(q);
+			}
+		}
+	}
+	return epc;
+}
