@@ -88,6 +88,28 @@ void syntax_analyser::production_reader()
 		if (pos != i + MACRONUM)
 			swap(production_list[i], production_list[pos - MACRONUM]);
 	}
+	vector<int>* q = NULL;
+	vector<int>::iterator pt;
+	for (vector<Production*>::iterator it = production_list.begin(); it != production_list.end(); it++)
+	{
+		q = &((*it)->production);
+		for (vector<int>::iterator itr = q->begin(); itr != q->end(); itr++)
+		{
+			if (*itr < 0)
+			{
+				p = new Production;
+				p->grammer_init((*q)[0]);
+				pt = itr + 1;
+				while (pt != q->end() && *pt > 0)
+				{
+					p->add_item(*pt);
+					pt++;
+				}
+				grammar.push_back(p);
+				itr = pt - 1;
+			}
+		}
+	}
 }
 
 void syntax_analyser::getfirst()
@@ -148,12 +170,13 @@ Ep_Closure* syntax_analyser::getclosure(Ep_Closure* ep)
 	ep->hash_set.push_back(item->hash);
 	ep->item_num++;
 	ep->hash_set_s.push_back(item->hash_s);*/
-	int itnum = ep->item_num;
+	int itnum;
 	vector<LR1_Item*> * p = &(ep->LR1_items);
 	vector<int> * q = NULL, *t = NULL;
 	vector<int>::iterator it;
 	do
-	{	
+	{
+		itnum = ep->item_num;
 		for (int i = 0; i < p->size(); i++)
 		{
 			q = &(p->at(i)->production);
@@ -205,7 +228,7 @@ Ep_Closure* syntax_analyser::getclosure(Ep_Closure* ep)
 							int exist = ep->have_item(*lr);
 							if (exist == -1)//不存在
 								ep->add_item(lr);
-							else if(exist == 0)//存在
+							else if (exist == 0)//存在
 								delete lr;
 							else//心存在，展望符不存在
 							{
@@ -232,7 +255,7 @@ Ep_Closure* syntax_analyser::go(Ep_Closure* ep, int x)
 	for (vector<LR1_Item*>::iterator it = lr->begin(); it != lr->end(); it++)
 	{
 		p = &((*it)->production);
-		for (vector<int>::iterator i = p->begin();i != p->end();i++)
+		for (vector<int>::iterator i = p->begin(); i != p->end() - 1; i++)
 		{
 			if (*i == x)
 			{
@@ -243,5 +266,79 @@ Ep_Closure* syntax_analyser::go(Ep_Closure* ep, int x)
 			}
 		}
 	}
-	return epc;
+	return this->getclosure(epc);
+}
+
+void syntax_analyser::getcollection()
+{
+	lrc = new LR1_Collection;
+	LR1_Item * sitem = new LR1_Item;
+	vector<int> * p = &(sitem->production);
+	int vtnum = snmap.size() - 1;
+	p->push_back(vtnum);
+	p->push_back(-1);
+	p->push_back(vtnum - 1);
+	sitem->pos = p->begin() + 1;
+	sitem->symbol.push_back(-3);//#
+	sitem->hash += 2 * vtnum - 2;
+	sitem->hash_s += -3;
+	Ep_Closure* epc = new Ep_Closure;
+	epc->add_item(sitem);
+	lrc->add_item(getclosure(epc));
+	int itnum;
+	do
+	{
+		itnum = lrc->item_num;
+		vector<Ep_Closure*> * ep = &(lrc->epset);
+		for (vector<Ep_Closure*>::iterator it = ep->begin(); it != ep->end(); it++)
+		{
+			for (int i = 0; i < vtnum; i++)
+			{
+				Ep_Closure * q = go(*it, i);
+				if (q->isempty() && lrc->have_item(q))
+					lrc->add_item(getclosure(q));
+			}
+		}
+	} while (itnum != lrc->item_num);
+}
+
+void syntax_analyser::makelist()
+{
+	int * listline = NULL;
+	for (int i = 0; i < lrc->item_num; i++)
+	{
+		listline = new int[MACRONUM];
+		memset(listline, 0, MACRONUM);
+		action.push_back(listline);
+		listline = new int[3];
+		memset(listline, 0, 3);
+		moveto.push_back(listline);
+	}
+	Ep_Closure * ec = NULL, *ne = NULL;
+	vector<int> * pd = NULL;
+	int next;
+	vector<int>::iterator itr;
+	for (int i = 0; i < lrc->item_num; i++)//i-->k
+	{
+		ec = lrc->epset[i];//Ik
+		for (vector<LR1_Item*>::iterator it = ec->LR1_items.begin(); it != ec->LR1_items.end(); it++)
+		{
+			pd = &((*it)->production);
+			itr = (*it)->pos;
+			if (itr != pd->end() - 1)
+			{
+				ne = go(ec, *itr);
+				next = lrc->contain(ne);
+				if (*itr < MACRONUM)//first if
+					*(action[i] + *itr) = next;//Sj
+				else if (*itr >= MACRONUM)//second if
+					*(moveto[i] + *itr) = next;//rj
+			}
+			else
+			{
+				//此处需要判断生成式在不在grammar里，考虑改造grammar为哈希表，方便查找
+			}
+		}
+
+	}
 }

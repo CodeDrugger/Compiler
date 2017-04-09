@@ -35,15 +35,21 @@ class syntax_analyser
 public:
 	std::ifstream ifs;
 	std::vector<Production*> production_list;
+	std::vector<Production*> grammar;
 	std::vector<std::string*> nsmap;
 	std::map<std::string, int> snmap;
 	std::map<int, std::set<int>*> first_set;
+	LR1_Collection * lrc;
+	std::vector<int*> action;
+	std::vector<int*> moveto;
 
 	syntax_analyser();
 	void production_reader();
 	void getfirst();
 	Ep_Closure* getclosure(Ep_Closure* ep);
 	Ep_Closure* go(Ep_Closure* ep,int x);
+	void getcollection();
+	void makelist();
 	//~syntax_analyser();
 };
 

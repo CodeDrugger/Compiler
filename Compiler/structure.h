@@ -19,7 +19,10 @@ class Production
 public:
 	std::vector<int> production;
 	int hash;
+
 	Production();
+	void add_item(int);
+	void grammer_init(int);
 };
 //LR1项目，形如[A->B.S,a]
 class LR1_Item
@@ -32,7 +35,7 @@ public:
 	std::vector<int>::iterator pos;//表示点在当前字符的后一位
 
 	LR1_Item();
-	LR1_Item* copy(LR1_Item*);
+	void copy(LR1_Item*);
 };
 //闭包集，即DFA的状态I
 class Ep_Closure
@@ -48,6 +51,19 @@ public:
 	void add_item(LR1_Item* item);
 	int have_item(LR1_Item &item);
 	bool equal(Ep_Closure &ec);
+	bool isempty();
 };
 
 //集族
+class LR1_Collection
+{
+public:
+	std::vector<Ep_Closure*> epset;
+	std::vector<int> hash_set;
+	int item_num;
+
+	LR1_Collection();
+	void add_item(Ep_Closure* item);
+	bool have_item(Ep_Closure* item);
+	int contain(Ep_Closure* item);
+};
