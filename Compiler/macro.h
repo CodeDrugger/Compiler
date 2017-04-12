@@ -56,3 +56,5 @@
 #define		PRINTF		42
 //终结符数量
 #define		MACRONUM	43
+//action表中的ACC
+#define		ACC			10000

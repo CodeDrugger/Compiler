@@ -17,19 +17,17 @@ void Production::grammer_init(int x)
 {
 	this->production.push_back(x);
 	this->production.push_back(-1);
-	this->hash += x - 1;
+	this->hash += x * x - 1;
 }
 
 LR1_Item::LR1_Item()
 {
 	hash = 0;
-	hash_s = 0;
 }
 
 void LR1_Item::copy(LR1_Item* item)
 {
 	this->hash = item->hash;
-	this->hash_s = item->hash_s;
 	this->pos = item->pos;
 	this->production = item->production;
 	this->symbol = item->symbol;
@@ -44,7 +42,18 @@ Ep_Closure::Ep_Closure()
 int Ep_Closure::have_item(LR1_Item& item)
 {
 	int hash = item.hash;
-	int hash_s = item.hash_s;
+	int symbol = item.symbol;
+	for (int j = 0; j < this->hash_set.size(); j++)
+	{
+		if (this->hash_set[j] == hash)
+		{
+			for (vector<int>::iterator i = this->hash_set_s.begin(); i != this->hash_set_s.end(); i++)
+				if (*i == symbol) return 0;//存在
+			//return j;//心存在，展望符不存在
+		}
+	}
+	return -1;//不存在
+	/*
 	for (int j = 0; j < hash_set.size(); j++)
 	{
 		if (hash_set[j] == hash)
@@ -57,13 +66,15 @@ int Ep_Closure::have_item(LR1_Item& item)
 		}
 	}
 	return -1;//不存在
+	*/
 }
 
 void Ep_Closure::add_item(LR1_Item* item)
 {
+	hash = item->hash + item->symbol;
 	LR1_items.push_back(item);
 	hash_set.push_back(item->hash);
-	hash_set_s.push_back(item->hash_s);
+	hash_set_s.push_back(item->symbol);
 	item_num++;
 }
 

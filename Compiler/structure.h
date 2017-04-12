@@ -19,6 +19,7 @@ class Production
 public:
 	std::vector<int> production;
 	int hash;
+	int num;
 
 	Production();
 	void add_item(int);
@@ -29,10 +30,12 @@ class LR1_Item
 {
 public:
 	int hash;
-	int hash_s;//展望符的hash
+	//int hash_s;//展望符的hash
+	int symbol;//展望符
 	std::vector<int> production;//应该是单个的
-	std::vector<int> symbol;
-	std::vector<int>::iterator pos;//表示点在当前字符的后一位
+	//std::vector<int> symbol;
+	//std::vector<int>::iterator pos;//表示点在当前字符的后一位
+	int pos;
 
 	LR1_Item();
 	void copy(LR1_Item*);
@@ -43,7 +46,7 @@ class Ep_Closure
 public:
 	int hash;//自己的hash
 	std::vector<int> hash_set;//所包含的LR1项目的hash，便于判断某LR1项目是否在其中
-	std::vector<int> hash_set_s;
+	std::vector<int> hash_set_s;//即symbols
 	int item_num;
 	std::vector<LR1_Item*> LR1_items;
 

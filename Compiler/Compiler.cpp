@@ -11,6 +11,7 @@ int main()
 	syntax_analyser sa;
 	sa.production_reader();
 	sa.getfirst();
+	sa.getcollection();
     return 0;
 }
 

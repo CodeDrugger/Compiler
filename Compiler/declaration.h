@@ -35,7 +35,7 @@ class syntax_analyser
 public:
 	std::ifstream ifs;
 	std::vector<Production*> production_list;
-	std::vector<Production*> grammar;
+	std::map<int, Production*> grammar;
 	std::vector<std::string*> nsmap;
 	std::map<std::string, int> snmap;
 	std::map<int, std::set<int>*> first_set;
@@ -50,6 +50,7 @@ public:
 	Ep_Closure* go(Ep_Closure* ep,int x);
 	void getcollection();
 	void makelist();
+	void excute();
 	//~syntax_analyser();
 };
 
