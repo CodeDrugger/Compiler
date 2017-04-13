@@ -41,14 +41,14 @@ Ep_Closure::Ep_Closure()
 
 int Ep_Closure::have_item(LR1_Item& item)
 {
-	int hash = item.hash;
-	int symbol = item.symbol;
+	int hash = item.hash;//包含了pos，生成式
+	int symbol = item.symbol;//包含展望符
 	for (int j = 0; j < this->hash_set.size(); j++)
 	{
 		if (this->hash_set[j] == hash)
 		{
 			for (vector<int>::iterator i = this->hash_set_s.begin(); i != this->hash_set_s.end(); i++)
-				if (*i == symbol) return 0;//存在
+				if (*i == symbol && i - hash_set_s.begin() == j) return 0;//存在
 			//return j;//心存在，展望符不存在
 		}
 	}
@@ -71,7 +71,7 @@ int Ep_Closure::have_item(LR1_Item& item)
 
 void Ep_Closure::add_item(LR1_Item* item)
 {
-	hash = item->hash + item->symbol;
+	hash += item->hash + item->symbol;
 	LR1_items.push_back(item);
 	hash_set.push_back(item->hash);
 	hash_set_s.push_back(item->symbol);

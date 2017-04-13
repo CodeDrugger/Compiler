@@ -122,6 +122,7 @@ void syntax_analyser::production_reader()
 	p = new Production;
 	p->grammer_init(snmap.size());
 	p->add_item(grammar.size());
+	p->num = grammar.size();
 	grammar.insert(pair<int, Production*>(p->hash, p));
 }
 
@@ -211,6 +212,7 @@ Ep_Closure* syntax_analyser::getclosure(Ep_Closure* ep)
 							lr->hash = itr->second->hash;
 							lr->pos = 1;
 							lr->symbol = t;
+							lr->hash *= 7 * lr->pos;
 							exist = ep->have_item(*lr);
 							if (exist < 0)
 								ep->add_item(lr);
@@ -219,22 +221,23 @@ Ep_Closure* syntax_analyser::getclosure(Ep_Closure* ep)
 						}
 						else//点不在末尾，beta不是空集
 						{
-							if (*(it + 1) < MACRONUM)//终结符
+							if (*(it + 1) < MACRONUM)//如果beta是终结符
 							{
 								lr = new LR1_Item;
 								lr->production = itr->second->production;
 								lr->hash = itr->second->hash;
 								lr->pos = 1;
 								lr->symbol = *(it + 1);
+								lr->hash *= 7 * lr->pos;
 								exist = ep->have_item(*lr);
 								if (exist < 0)
 									ep->add_item(lr);
 								else
 									delete lr;
 							}
-							else//不是终结符
+							else//如果beta不是终结符
 							{
-								set<int>* first = first_set.find(*it)->second;
+								set<int>* first = first_set.find(*(it + 1))->second;
 								for (set<int>::iterator ir = first->begin(); ir != first->end(); ir++)
 								{
 									lr = new LR1_Item;
@@ -242,6 +245,7 @@ Ep_Closure* syntax_analyser::getclosure(Ep_Closure* ep)
 									lr->hash = itr->second->hash;
 									lr->pos = 1;
 									lr->symbol = *ir;
+									lr->hash *= 7 * lr->pos;
 									exist = ep->have_item(*lr);
 									if (exist < 0)
 										ep->add_item(lr);
@@ -323,13 +327,14 @@ Ep_Closure* syntax_analyser::go(Ep_Closure* ep, int x)
 	for (vector<LR1_Item*>::iterator it = lr->begin(); it != lr->end(); it++)
 	{
 		p = &((*it)->production);
-		for (vector<int>::iterator i = p->begin() + 2; i != p->end() - 1; i++)
+		for (vector<int>::iterator i = p->begin() + 2; i != p->end(); i++)
 		{
-			if (*i == x)
+			if (*i == x && i - p->begin() == (*it)->pos + 1)
 			{
 				LR1_Item* q = new LR1_Item;
 				q->copy(*it);
 				q->pos++;
+				q->hash += 7 * q->pos;
 				epc->add_item(q);
 			}
 		}
@@ -354,6 +359,7 @@ void syntax_analyser::getcollection()
 	sitem->pos = 1;
 	sitem->symbol = -3;//#
 	sitem->hash += vtnum * vtnum + vtnum - 2;
+	sitem->hash *= 7 * sitem->pos;
 	Ep_Closure* epc = new Ep_Closure;
 	epc->add_item(sitem);
 	lrc->add_item(getclosure(epc));
@@ -370,10 +376,6 @@ void syntax_analyser::getcollection()
 			if (it == ep->end()) break;
 			for (int i = 0; i < vtnum; i++)
 			{
-				if (i == 45)
-				{
-					cout << " ";
-				}
 				it = ep->begin() + k;
 				Ep_Closure * q = go(*it, i);
 				if (q == NULL) continue;
