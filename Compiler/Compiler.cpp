@@ -12,6 +12,7 @@ int main()
 	sa.production_reader();
 	sa.getfirst();
 	sa.getcollection();
+	sa.makelist();
 	for (vector<Ep_Closure*>::iterator it = sa.lrc->epset.begin(); it != sa.lrc->epset.end(); it++)
 	{
 		for (vector<LR1_Item*>::iterator itr = (*it)->LR1_items.begin(); itr != (*it)->LR1_items.end(); itr++)
@@ -34,6 +35,23 @@ int main()
 		}
 		cout << "\n-----------------------------------------------------\n";
 	}
+	for (vector<int*>::iterator it = sa.action.begin(); it != sa.action.end(); it++)
+	{
+		for (int i = 0; i < 44; i++)
+		{
+			if (i == 10 || i == 12 || i == 32 || i == 43)
+				cout << (*it)[i] << "  ";
+		}
+		cout << "\n";
+	}
+	/*for (vector<int*>::iterator it = sa.moveto.begin(); it != sa.moveto.end(); it++)
+	{
+		for (int i = 0; i < sa.snmap.size()-MACRONUM; i++)
+		{
+				cout << (*it)[i] << "  ";
+		}
+		cout << "\n";
+	}*/
     return 0;
 }
 

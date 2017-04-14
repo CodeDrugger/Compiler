@@ -13,7 +13,7 @@ void Production::add_item(int x)
 	this->hash += x;
 }
 
-void Production::grammer_init(int x)
+void Production::grammar_init(int x)
 {
 	this->production.push_back(x);
 	this->production.push_back(-1);
@@ -31,6 +31,13 @@ void LR1_Item::copy(LR1_Item* item)
 	this->pos = item->pos;
 	this->production = item->production;
 	this->symbol = item->symbol;
+}
+
+bool LR1_Item::pro_equal(int phash)
+{
+	int hash_nopos = hash - 7 * pos;
+	if (phash == hash_nopos)return true;
+	else return false;
 }
 
 Ep_Closure::Ep_Closure()
@@ -110,6 +117,7 @@ bool LR1_Collection::have_item(Ep_Closure * item)
 
 int LR1_Collection::contain(Ep_Closure* item)
 {
+	if (item == NULL) return -1;
 	int hash = item->hash;
 	for (int i = 0; i < this->hash_set.size(); i++)
 	{

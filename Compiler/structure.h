@@ -23,7 +23,7 @@ public:
 
 	Production();
 	void add_item(int);
-	void grammer_init(int);
+	void grammar_init(int);
 };
 //LR1项目，形如[A->B.S,a]
 class LR1_Item
@@ -39,6 +39,7 @@ public:
 
 	LR1_Item();
 	void copy(LR1_Item*);
+	bool pro_equal(int phash);
 };
 //闭包集，即DFA的状态I
 class Ep_Closure

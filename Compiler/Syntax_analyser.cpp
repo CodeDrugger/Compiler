@@ -88,7 +88,7 @@ void syntax_analyser::production_reader()
 		if (pos != i + MACRONUM)
 			swap(production_list[i], production_list[pos - MACRONUM]);
 	}
-	int num = 0;
+	int num = 1;
 	vector<int>* q = NULL;
 	vector<int>::iterator pt;
 	pair<map<int, Production*>::iterator, bool> ret;
@@ -100,7 +100,7 @@ void syntax_analyser::production_reader()
 			if (*itr < 0)
 			{
 				p = new Production;
-				p->grammer_init((*q)[0]);
+				p->grammar_init((*q)[0]);
 				pt = itr + 1;
 				while (pt != q->end() && *pt > 0)
 				{
@@ -120,7 +120,7 @@ void syntax_analyser::production_reader()
 	}
 	//S'
 	p = new Production;
-	p->grammer_init(snmap.size());
+	p->grammar_init(snmap.size());
 	p->add_item(grammar.size());
 	p->num = grammar.size();
 	grammar.insert(pair<int, Production*>(p->hash, p));
@@ -212,7 +212,7 @@ Ep_Closure* syntax_analyser::getclosure(Ep_Closure* ep)
 							lr->hash = itr->second->hash;
 							lr->pos = 1;
 							lr->symbol = t;
-							lr->hash *= 7 * lr->pos;
+							lr->hash += 7;
 							exist = ep->have_item(*lr);
 							if (exist < 0)
 								ep->add_item(lr);
@@ -228,7 +228,7 @@ Ep_Closure* syntax_analyser::getclosure(Ep_Closure* ep)
 								lr->hash = itr->second->hash;
 								lr->pos = 1;
 								lr->symbol = *(it + 1);
-								lr->hash *= 7 * lr->pos;
+								lr->hash += 7;
 								exist = ep->have_item(*lr);
 								if (exist < 0)
 									ep->add_item(lr);
@@ -245,7 +245,7 @@ Ep_Closure* syntax_analyser::getclosure(Ep_Closure* ep)
 									lr->hash = itr->second->hash;
 									lr->pos = 1;
 									lr->symbol = *ir;
-									lr->hash *= 7 * lr->pos;
+									lr->hash += 7;
 									exist = ep->have_item(*lr);
 									if (exist < 0)
 										ep->add_item(lr);
@@ -334,7 +334,7 @@ Ep_Closure* syntax_analyser::go(Ep_Closure* ep, int x)
 				LR1_Item* q = new LR1_Item;
 				q->copy(*it);
 				q->pos++;
-				q->hash += 7 * q->pos;
+				q->hash += 7;
 				epc->add_item(q);
 			}
 		}
@@ -359,7 +359,7 @@ void syntax_analyser::getcollection()
 	sitem->pos = 1;
 	sitem->symbol = -3;//#
 	sitem->hash += vtnum * vtnum + vtnum - 2;
-	sitem->hash *= 7 * sitem->pos;
+	sitem->hash += 7;
 	Ep_Closure* epc = new Ep_Closure;
 	epc->add_item(sitem);
 	lrc->add_item(getclosure(epc));
@@ -396,10 +396,10 @@ void syntax_analyser::makelist()
 	for (int i = 0; i < lrc->item_num; i++)
 	{
 		listline = new int[MACRONUM + 1];//vtnum+#(-3)
-		memset(listline, 0, MACRONUM + 1);
+		memset(listline, 0, (MACRONUM + 1) * sizeof(int));
 		action.push_back(listline);
 		listline = new int[snmap.size() - MACRONUM];//vnum
-		memset(listline, 0, snmap.size() - MACRONUM);
+		memset(listline, 0, (snmap.size() - MACRONUM) * sizeof(int));
 		moveto.push_back(listline);
 	}
 	Ep_Closure * ec = NULL, *ne = NULL;
@@ -407,8 +407,9 @@ void syntax_analyser::makelist()
 	int next, sy;
 	vector<int>::iterator itr;
 	map<int, Production*>::iterator git;
-	int fhash = nsmap.size()*nsmap.size() + nsmap.size() - 2;
-	;	for (int i = 0; i < lrc->item_num; i++)//i-->k
+	int fhash = snmap.size()*snmap.size() + snmap.size() - 2 + 7 * 2;
+	int phash;
+	for (int i = 0; i < lrc->item_num; i++)//i-->k
 	{
 		ec = lrc->epset[i];//Ik
 		for (vector<LR1_Item*>::iterator it = ec->LR1_items.begin(); it != ec->LR1_items.end(); it++)
@@ -417,22 +418,36 @@ void syntax_analyser::makelist()
 				*(action[i] + MACRONUM) = ACC;
 			pd = &((*it)->production);
 			itr = pd->begin() + (*it)->pos;
+			for (int j = MACRONUM; j < snmap.size(); j++)
+			{
+				ne = go(ec, j);
+				next = lrc->contain(ne);
+				if (next >= 0)
+					*(moveto[i] + (j - MACRONUM)) = next;
+			}
 			if (itr != pd->end() - 1)
 			{
 				itr++;
 				ne = go(ec, *itr);
 				next = lrc->contain(ne);
-				if (next >= 0)
+				/*if (next >= 0)
 				{
 					if (*itr < MACRONUM)//first if
 						*(action[i] + *itr) = next;//Sj
 					else if (*itr >= MACRONUM)//second if
 						*(moveto[i] + (*itr - MACRONUM)) = next;//j
-				}
+				}*/
+				if (next >= 0 && *itr < MACRONUM)//first if
+					*(action[i] + *itr) = next;//Sj
 			}
 			else
 			{
-				git = grammar.find((*it)->hash);
+				phash = (*it)->production[0];
+				phash *= phash;
+				phash--;
+				for (vector<int>::iterator ir = (*it)->production.begin() + 2; ir != (*it)->production.end(); ir++)
+					phash += *ir;
+				git = grammar.find(phash);
 				if (git != grammar.end())//third if
 				{
 					sy = (*it)->symbol;
