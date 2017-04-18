@@ -7,9 +7,10 @@ int main(int kk)
 		abc ++;//dsg
 	}
 	char s[] = "asd\"as";
+	int dd;
 	while (1)
 	{
-		abc ++;
+		break;
 	}
 	abc = 0xffffffff;
 	char ss = '\\'+'\''+'l' + '\n';
@@ -21,7 +22,7 @@ int main(int kk)
 	{
 		i = i +1;
 	}
-	if (i > 0)
+	if (i > 0 && (c > 0 || abc < 0))
 	{
 		i = abc - i;
 	}

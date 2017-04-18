@@ -82,9 +82,10 @@ void syntax_analyser::production_reader()
 		}
 		end = s;
 	}
+	int pos;
 	for (int i = 0; i < production_list.size(); i++)
 	{
-		int pos = (production_list[i])->production[0];
+		pos = (production_list[i])->production[0];
 		if (pos != i + MACRONUM)
 			swap(production_list[i], production_list[pos - MACRONUM]);
 	}
@@ -121,9 +122,12 @@ void syntax_analyser::production_reader()
 	//S'
 	p = new Production;
 	p->grammar_init(snmap.size());
-	p->add_item(grammar.size());
-	p->num = grammar.size();
+	p->add_item(snmap.size() - 1);
+	p->num = grammar.size() + 1;
 	grammar.insert(pair<int, Production*>(p->hash, p));
+	grammar_p.assign(grammar.size() + 1, 0);
+	for (map<int, Production*>::iterator it = grammar.begin(); it != grammar.end(); it++)
+		grammar_p[(*it).second->num] = (*it).second;
 }
 
 void syntax_analyser::getfirst()
@@ -415,7 +419,10 @@ void syntax_analyser::makelist()
 		for (vector<LR1_Item*>::iterator it = ec->LR1_items.begin(); it != ec->LR1_items.end(); it++)
 		{
 			if ((*it)->hash == fhash && (*it)->symbol == -3)//forth if
+			{
 				*(action[i] + MACRONUM) = ACC;
+				continue;
+			}
 			pd = &((*it)->production);
 			itr = pd->begin() + (*it)->pos;
 			for (int j = MACRONUM; j < snmap.size(); j++)
@@ -461,9 +468,98 @@ void syntax_analyser::makelist()
 	}
 }
 
-void syntax_analyser::excute()
+void syntax_analyser::analyser(deque<Token_Stream*>& token_stream)
+{
+	stack<pair<int, int>> stk;
+	stk.push(pair<int, int>(0, -3));
+	Token_Stream * t = new Token_Stream;
+	t->macrocode = -3;
+	t->macrocode = 0;
+	token_stream.push_back(t);
+	deque<Token_Stream*>::iterator ip = token_stream.begin();
+	int ac_item, macro, ps;
+	vector<int> * pro = NULL;
+	while (true)
+	{
+		macro = (*ip)->macrocode;
+		if (macro > 0)
+			ac_item = *(action[stk.top().first] + macro);
+		else
+			ac_item = *(action[stk.top().first] + MACRONUM);
+		if (ac_item == ACC)
+			break;
+		else if (ac_item > 0)//Si
+		{
+			stk.push(pair<int, int>(ac_item, macro));
+			ip++;
+		}
+		else if (ac_item < 0)//ri
+		{
+			pro = &(grammar_p[-1 * ac_item]->production);
+			for (int i = 0; i < pro->size() - 2; i++)
+				stk.pop();
+			ps = pro->at(0);//A
+			stk.push(pair<int, int>(*(moveto[stk.top().first] + ps - MACRONUM), ps));
+			for (vector<int>::iterator it = pro->begin(); it != pro->end(); it++)
+			{
+				if (*it > 0)
+					cout << *(nsmap[*it]);
+				else
+					cout << "->";
+			}
+			cout << '\n';
+		}
+		else
+		{
+			cout << *ip << "  ERROR!";
+			break;
+		}
+	}
+}
+
+void syntax_analyser::readlist()
+{
+	ifstream is("action.txt");
+	int * listline = NULL;
+	string s;
+	for (int j = 0; j < 261; j++)
+	{
+		listline = new int[MACRONUM + 1];//vtnum+#(-3)
+		memset(listline, 0, (MACRONUM + 1) * sizeof(int));
+		for (int i = 0; i <= MACRONUM; i++)
+		{
+			is >> s;
+			*(listline + i) = atoi(s.c_str());
+		}
+		action.push_back(listline);
+	}
+	is.close();
+	ifstream iss("goto.txt");
+	for (int j = 0; j < 261; j++)
+	{
+		listline = new int[snmap.size() - MACRONUM];//vnum
+		memset(listline, 0, (snmap.size() - MACRONUM) * sizeof(int));
+		for (int i = 0; i < 25; i++)
+		{
+			iss >> s;
+			*(listline + i) = atoi(s.c_str());
+		}
+		moveto.push_back(listline);
+	}
+	iss.close();
+}
+
+void syntax_analyser::excute(deque<Token_Stream*>& token_stream)
 {
 	production_reader();
 	getfirst();
+	//getcollection();
+	readlist();
+	//makelist();
+	analyser(token_stream);
+}
 
+syntax_analyser::~syntax_analyser()
+{
+	ifs.close();
 }

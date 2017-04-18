@@ -6,11 +6,12 @@ using namespace std;
 
 int main()
 {
-	/*token_scanner ts;
-	ts.excute();*/
+	int a = clock();
+	token_scanner ts;
+	ts.excute();
 	syntax_analyser sa;
-	sa.production_reader();
-	sa.getfirst();
+	sa.excute(ts.token_stream);
+	/*sa.getfirst();
 	sa.getcollection();
 	sa.makelist();
 	for (vector<Ep_Closure*>::iterator it = sa.lrc->epset.begin(); it != sa.lrc->epset.end(); it++)
@@ -34,24 +35,29 @@ int main()
 				cout << "  " << "#  ,  ";
 		}
 		cout << "\n-----------------------------------------------------\n";
-	}
+	}*/
+	/*ofstream os("action.txt");
 	for (vector<int*>::iterator it = sa.action.begin(); it != sa.action.end(); it++)
 	{
 		for (int i = 0; i < 44; i++)
 		{
-			if (i == 10 || i == 12 || i == 32 || i == 43)
-				cout << (*it)[i] << "  ";
+			os << (*it)[i] << '\t';
 		}
-		cout << "\n";
+		os << "\n";
 	}
-	/*for (vector<int*>::iterator it = sa.moveto.begin(); it != sa.moveto.end(); it++)
+	os.close();
+	ofstream os1("goto.txt");
+	for (vector<int*>::iterator it = sa.moveto.begin(); it != sa.moveto.end(); it++)
 	{
 		for (int i = 0; i < sa.snmap.size()-MACRONUM; i++)
 		{
-				cout << (*it)[i] << "  ";
+				os1 << (*it)[i] << '\t';
 		}
-		cout << "\n";
-	}*/
-    return 0;
+		os1 << "\n";
+	}
+	os.close();*/
+	int b = clock();
+	cout << 1.0 * (b - a) / CLOCKS_PER_SEC;
+	return 0;
 }
 

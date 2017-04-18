@@ -36,6 +36,7 @@ public:
 	std::ifstream ifs;
 	std::vector<Production*> production_list;
 	std::map<int, Production*> grammar;
+	std::vector<Production*> grammar_p;
 	std::vector<std::string*> nsmap;
 	std::map<std::string, int> snmap;
 	std::map<int, std::set<int>*> first_set;
@@ -47,11 +48,13 @@ public:
 	void production_reader();
 	void getfirst();
 	Ep_Closure* getclosure(Ep_Closure* ep);
-	Ep_Closure* go(Ep_Closure* ep,int x);
+	Ep_Closure* go(Ep_Closure* ep, int x);
 	void getcollection();
 	void makelist();
-	void excute();
-	//~syntax_analyser();
+	void analyser(std::deque<Token_Stream*>& token_stream);
+	void excute(std::deque<Token_Stream*>& token_stream);
+	void readlist();
+	~syntax_analyser();
 };
 
 int wordclassify(std::string s);

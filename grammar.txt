@@ -8,10 +8,10 @@
 ^ Dec -> Typ Ass @
 ^ Sta -> Dec | Ass | Exp ; | Ifb | Fob | Whb | Ret | ; | Sta Sta @
 ^ Eif -> $ELSE $IF ( Exp ) { Sta } | Eif @
-^ Ifb -> $IF ( Exp ) { Sta } | $IF ( Exp ) { Sta } $ELSE { Sta } | $IF ( Exp ) { Sta } Eif $ELSE { Sta } @
+^ Ifb -> $IF ( Exp ) { Sta } | $IF ( Exp ) { Sta } $ELSE { Sta } | $IF ( Exp ) { Sta } Eif $ELSE { Sta } | $IF ( Exp ) { Sta } Eif @
 ^ Stl -> Sta | $CONTINUE ; | $BREAK ; @
-^ Fob -> $FOR ( Ass ; Exp ; Exp ) { Stl } | $FOR ( Ass ; Exp ; Exp ) Stl @
-^ Whb -> $WHILE ( Exp ) { Stl } | $WHILE ( Exp ) Stl @
+^ Fob -> $FOR ( Ass ; Exp ; Exp ) { Stl } @
+^ Whb -> $WHILE ( Exp ) { Stl } @
 ^ Ret -> $RETURN Exp ; @
 ^ Vls -> Typ $ID | Typ $ID , Vls @
 ^ S -> Typ $MAIN ( Vls ) { Sta Ret } @

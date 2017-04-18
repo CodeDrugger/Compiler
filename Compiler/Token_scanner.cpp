@@ -2,7 +2,7 @@
 
 using namespace std;
 
-token_scanner::token_scanner() 
+token_scanner::token_scanner()
 {
 	begin = NULL;
 	forward = NULL;
@@ -146,7 +146,7 @@ void token_scanner::buffer_scanner()
 						}
 						string s = gettoken();
 						movebegin();
-						token_install(B4, strtol(s.c_str(),0,16), useless, 2);
+						token_install(B4, strtol(s.c_str(), 0, 16), useless, 2);
 					}
 					else
 					{
@@ -390,7 +390,7 @@ void token_scanner::buffer_scanner()
 						}
 
 					}
-					else 
+					else
 						goahead(isend);
 					movebegin();
 					break;
@@ -402,7 +402,7 @@ void token_scanner::buffer_scanner()
 					{
 						if (getfchar(1) == '\\')
 							bbq_mark = !bbq_mark;
-						else 
+						else
 						{
 							string s = getstring();
 							token_install(STR, 0, s, 0);
@@ -425,16 +425,16 @@ void token_scanner::buffer_scanner()
 					token_install(COMMA, 0, useless, 2);
 					movebegin();
 					break;
-				/*case '#':
-					goahead(isend);
-					token_install(POUND, 0, useless, 2);
-					movebegin();
-					break;
-				case '.':
-					goahead(isend);
-					token_install(FSTOP, 0, useless, 2);
-					movebegin();
-					break;*/
+					/*case '#':
+						goahead(isend);
+						token_install(POUND, 0, useless, 2);
+						movebegin();
+						break;
+					case '.':
+						goahead(isend);
+						token_install(FSTOP, 0, useless, 2);
+						movebegin();
+						break;*/
 				}
 			}
 		}
@@ -451,9 +451,9 @@ void token_scanner::buffer_scanner()
 				isinstr = !isinstr;
 				string s = getstring();
 				token_install(STR, 0, s, 0);
-			}				
+			}
 			goahead(isend);
-		}			
+		}
 	}
 	if (!s_brac.empty())
 		cout << "小括号不匹配" << endl;
@@ -487,7 +487,7 @@ string token_scanner::gettoken()
 {
 	memset(token, 0, 32);
 	int i = 0;
-	for (char * tokencpy = begin; tokencpy != forward;tokencpy++)
+	for (char * tokencpy = begin; tokencpy != forward; tokencpy++)
 	{
 		if (tokencpy > dbuffer + 1023)
 			tokencpy = dbuffer;
@@ -495,7 +495,7 @@ string token_scanner::gettoken()
 		{
 			token[i] = *tokencpy;
 			i++;
-		}	
+		}
 	}
 	string s = token;
 	return s;
@@ -509,7 +509,7 @@ void token_scanner::token_install(int macrocode, int value, string &s, int mode)
 	{
 		Token_List * tl = new Token_List;
 		tl->name = string(s);
-		token_list.push_back(tl);	
+		token_list.push_back(tl);
 		ts->attribute = (int)tl;
 	}
 	else if (mode == 1)//其他关键字
@@ -566,7 +566,7 @@ void token_scanner::goahead(bool &isend)
 		forward++;
 		this->prepare();
 	}
-		
+
 }
 
 void token_scanner::movebegin()
@@ -620,7 +620,7 @@ void token_scanner::excute()
 {
 	this->prepare();
 	this->buffer_scanner();
-	this->show();
+	//this->show();
 }
 
 token_scanner::~token_scanner()

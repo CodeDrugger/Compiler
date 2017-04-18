@@ -87,7 +87,7 @@ void Ep_Closure::add_item(LR1_Item* item)
 
 bool Ep_Closure::isempty()
 {
-	if (this->item_num == 0) 
+	if (this->item_num == 0)
 		return true;
 	else return false;
 }
