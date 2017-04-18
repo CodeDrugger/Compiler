@@ -46,8 +46,8 @@ class Ep_Closure
 {
 public:
 	int hash;//自己的hash
-	std::vector<int> hash_set;//所包含的LR1项目的hash，便于判断某LR1项目是否在其中
-	std::vector<int> hash_set_s;//即symbols
+	std::set<std::pair<int,int>> hash_set;//所包含的LR1项目的hash，便于判断某LR1项目是否在其中
+	std::set<int> hash_set_s;//即symbols
 	int item_num;
 	std::vector<LR1_Item*> LR1_items;
 
@@ -63,7 +63,8 @@ class LR1_Collection
 {
 public:
 	std::vector<Ep_Closure*> epset;
-	std::vector<int> hash_set;
+	std::set<int> hash_set;
+	std::vector<int>hash_s;
 	int item_num;
 
 	LR1_Collection();

@@ -106,7 +106,7 @@ void syntax_analyser::production_reader()
 				while (pt != q->end() && *pt > 0)
 				{
 					p->add_item(*pt);
-					pt++;
+					++pt;
 				}
 				p->num = num;
 				num++;
@@ -126,7 +126,7 @@ void syntax_analyser::production_reader()
 	p->num = grammar.size() + 1;
 	grammar.insert(pair<int, Production*>(p->hash, p));
 	grammar_p.assign(grammar.size() + 1, 0);
-	for (map<int, Production*>::iterator it = grammar.begin(); it != grammar.end(); it++)
+	for (map<int, Production*>::iterator it = grammar.begin(); it != grammar.end(); ++it)
 		grammar_p[(*it).second->num] = (*it).second;
 }
 
@@ -164,7 +164,7 @@ void syntax_analyser::getfirst()
 			{
 				t = first_set.find((*q)[j + 1])->second;
 				if (t == p) continue;
-				for (set<int>::iterator it = t->begin(); it != t->end(); it++)
+				for (set<int>::iterator it = t->begin(); it != t->end(); ++it)
 				{
 					ret = p->insert(*it);
 					if (ret.second == true)
@@ -193,6 +193,7 @@ Ep_Closure* syntax_analyser::getclosure(Ep_Closure* ep)
 	vector<int> * q = NULL;
 	vector<int>::iterator it;
 	LR1_Item * lr = NULL;
+	set<int>* first = NULL;
 	do
 	{
 		itnum = ep->item_num;
@@ -205,7 +206,7 @@ Ep_Closure* syntax_analyser::getclosure(Ep_Closure* ep)
 			it++;
 			if (*it >= MACRONUM)
 			{
-				for (map<int, Production*>::iterator itr = grammar.begin(); itr != grammar.end(); itr++)//从拓展文法里找
+				for (map<int, Production*>::iterator itr = grammar.begin(); itr != grammar.end(); ++itr)//从拓展文法里找
 				{
 					if (itr->second->production.at(0) == *it)//B开头的生成式
 					{
@@ -241,8 +242,8 @@ Ep_Closure* syntax_analyser::getclosure(Ep_Closure* ep)
 							}
 							else//如果beta不是终结符
 							{
-								set<int>* first = first_set.find(*(it + 1))->second;
-								for (set<int>::iterator ir = first->begin(); ir != first->end(); ir++)
+								first = first_set.find(*(it + 1))->second;
+								for (set<int>::iterator ir = first->begin(); ir != first->end(); ++ir)
 								{
 									lr = new LR1_Item;
 									lr->production = itr->second->production;
@@ -328,14 +329,16 @@ Ep_Closure* syntax_analyser::go(Ep_Closure* ep, int x)
 	Ep_Closure * epc = new Ep_Closure;//J
 	vector<LR1_Item*>* lr = &(ep->LR1_items);
 	vector<int>* p = NULL;
-	for (vector<LR1_Item*>::iterator it = lr->begin(); it != lr->end(); it++)
+	LR1_Item* q = NULL;
+	for (vector<LR1_Item*>::iterator it = lr->begin(); it != lr->end(); ++it)
 	{
 		p = &((*it)->production);
-		for (vector<int>::iterator i = p->begin() + 2; i != p->end(); i++)
+		for (vector<int>::iterator i = p->begin() + 2; i != p->end(); ++i)
 		{
-			if (*i == x && i - p->begin() == (*it)->pos + 1)
+			if (*i != x) continue;
+			if (i - p->begin() == (*it)->pos + 1)
 			{
-				LR1_Item* q = new LR1_Item;
+				q = new LR1_Item;
 				q->copy(*it);
 				q->pos++;
 				q->hash += 7;
@@ -368,12 +371,14 @@ void syntax_analyser::getcollection()
 	epc->add_item(sitem);
 	lrc->add_item(getclosure(epc));
 	int itnum, k = 0;
+	vector<Ep_Closure*> * ep = NULL;
+	vector<Ep_Closure*>::iterator it;
+	Ep_Closure * q = NULL;
 	do
 	{
 		itnum = lrc->item_num;
-		vector<Ep_Closure*> * ep = &(lrc->epset);
-		//for (vector<Ep_Closure*>::iterator it = ep->begin(); it != ep->end(); k++)
-		vector<Ep_Closure*>::iterator it;
+		ep = &(lrc->epset);
+		//for (vector<Ep_Closure*>::iterator it = ep->begin(); it != ep->end(); k++)		
 		while (true)
 		{
 			it = ep->begin() + k;
@@ -381,7 +386,7 @@ void syntax_analyser::getcollection()
 			for (int i = 0; i < vtnum; i++)
 			{
 				it = ep->begin() + k;
-				Ep_Closure * q = go(*it, i);
+				q = go(*it, i);
 				if (q == NULL) continue;
 				if (!(q->isempty()) && !(lrc->have_item(q)))
 					lrc->add_item(getclosure(q));
@@ -416,7 +421,7 @@ void syntax_analyser::makelist()
 	for (int i = 0; i < lrc->item_num; i++)//i-->k
 	{
 		ec = lrc->epset[i];//Ik
-		for (vector<LR1_Item*>::iterator it = ec->LR1_items.begin(); it != ec->LR1_items.end(); it++)
+		for (vector<LR1_Item*>::iterator it = ec->LR1_items.begin(); it != ec->LR1_items.end(); ++it)
 		{
 			if ((*it)->hash == fhash && (*it)->symbol == -3)//forth if
 			{
@@ -452,7 +457,7 @@ void syntax_analyser::makelist()
 				phash = (*it)->production[0];
 				phash *= phash;
 				phash--;
-				for (vector<int>::iterator ir = (*it)->production.begin() + 2; ir != (*it)->production.end(); ir++)
+				for (vector<int>::iterator ir = (*it)->production.begin() + 2; ir != (*it)->production.end(); ++ir)
 					phash += *ir;
 				git = grammar.find(phash);
 				if (git != grammar.end())//third if
@@ -491,7 +496,7 @@ void syntax_analyser::analyser(deque<Token_Stream*>& token_stream)
 		else if (ac_item > 0)//Si
 		{
 			stk.push(pair<int, int>(ac_item, macro));
-			ip++;
+			++ip;
 		}
 		else if (ac_item < 0)//ri
 		{
@@ -500,7 +505,7 @@ void syntax_analyser::analyser(deque<Token_Stream*>& token_stream)
 				stk.pop();
 			ps = pro->at(0);//A
 			stk.push(pair<int, int>(*(moveto[stk.top().first] + ps - MACRONUM), ps));
-			for (vector<int>::iterator it = pro->begin(); it != pro->end(); it++)
+			for (vector<int>::iterator it = pro->begin(); it != pro->end(); ++it)
 			{
 				if (*it > 0)
 					cout << *(nsmap[*it]);
@@ -553,9 +558,9 @@ void syntax_analyser::excute(deque<Token_Stream*>& token_stream)
 {
 	production_reader();
 	getfirst();
-	//getcollection();
-	readlist();
-	//makelist();
+	getcollection();
+	//readlist();
+	makelist();
 	analyser(token_stream);
 }
 

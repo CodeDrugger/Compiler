@@ -48,9 +48,12 @@ Ep_Closure::Ep_Closure()
 
 int Ep_Closure::have_item(LR1_Item& item)
 {
-	int hash = item.hash;//包含了pos，生成式
-	int symbol = item.symbol;//包含展望符
-	for (int j = 0; j < this->hash_set.size(); j++)
+	//int hash = item.hash;//包含了pos，生成式
+	//int symbol = item.symbol;//包含展望符
+	if (hash_set.find(pair<int,int>(item.hash,item.symbol)) != hash_set.end())//找到hash
+		return 0;
+	return -1;
+	/*for (int j = 0; j < this->hash_set.size(); j++)
 	{
 		if (this->hash_set[j] == hash)
 		{
@@ -80,8 +83,7 @@ void Ep_Closure::add_item(LR1_Item* item)
 {
 	hash += item->hash + item->symbol;
 	LR1_items.push_back(item);
-	hash_set.push_back(item->hash);
-	hash_set_s.push_back(item->symbol);
+	hash_set.insert(pair<int,int>(item->hash,item->symbol));
 	item_num++;
 }
 
@@ -101,27 +103,31 @@ void LR1_Collection::add_item(Ep_Closure* item)
 {
 	this->epset.push_back(item);
 	this->item_num++;
-	this->hash_set.push_back(item->hash);
+	this->hash_s.push_back(item->hash);
+	hash_set.insert(item->hash);
 }
 
 bool LR1_Collection::have_item(Ep_Closure * item)
 {
-	int hash = item->hash;
+	if (hash_set.find(item->hash) != hash_set.end())
+		return true;
+	return false;
+	/*int hash = item->hash;
 	vector<int> * hash_set = &(this->hash_set);
 	for (vector<int>::iterator it = hash_set->begin(); it != hash_set->end(); it++)
 	{
 		if (*it == hash) return true;
 	}
-	return false;
+	return false;*/
 }
 
 int LR1_Collection::contain(Ep_Closure* item)
 {
 	if (item == NULL) return -1;
 	int hash = item->hash;
-	for (int i = 0; i < this->hash_set.size(); i++)
+	for (int i = 0; i < this->hash_s.size(); i++)
 	{
-		if (hash_set[i] == hash)
+		if (hash_s[i] == hash)
 			return i;
 	}
 	return -1;

@@ -36,7 +36,7 @@ int main()
 		}
 		cout << "\n-----------------------------------------------------\n";
 	}*/
-	/*ofstream os("action.txt");
+	/*ofstream os("action0.txt");
 	for (vector<int*>::iterator it = sa.action.begin(); it != sa.action.end(); it++)
 	{
 		for (int i = 0; i < 44; i++)
@@ -46,7 +46,7 @@ int main()
 		os << "\n";
 	}
 	os.close();
-	ofstream os1("goto.txt");
+	ofstream os1("goto0.txt");
 	for (vector<int*>::iterator it = sa.moveto.begin(); it != sa.moveto.end(); it++)
 	{
 		for (int i = 0; i < sa.snmap.size()-MACRONUM; i++)
