@@ -1,19 +1,19 @@
-int main(int kk)
+int main()
 {
 	int abc = 2;
 	char c = 'e';/*asf*/
+	char s[] = "asd\"as";
+	char ss = '\\'+'\''+'l' + '\n';
+	int i = 0;
 	if (c == 'e')
 	{
 		abc ++;//dsg
-	}
-	char s[] = "asd\"as";
+	}	
 	while (1)
 	{
 		abc ++;
 	}
 	abc = 0xffffffff;
-	char ss = '\\'+'\''+'l' + '\n';
-	int i = 0;
 	/*
 	sgs
 	*/

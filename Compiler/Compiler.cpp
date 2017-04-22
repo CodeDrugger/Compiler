@@ -36,26 +36,26 @@ int main()
 		}
 		cout << "\n-----------------------------------------------------\n";
 	}*/
-	/*ofstream os("action0.txt");
-	for (vector<int*>::iterator it = sa.action.begin(); it != sa.action.end(); it++)
+	/*ofstream os("action1.txt");
+	for (vector<int*>::iterator it = sa.action.begin(); it != sa.action.end(); ++it)
 	{
 		for (int i = 0; i < 44; i++)
 		{
 			os << (*it)[i] << '\t';
 		}
-		os << "\n";
+		os << '\n';
 	}
 	os.close();
-	ofstream os1("goto0.txt");
-	for (vector<int*>::iterator it = sa.moveto.begin(); it != sa.moveto.end(); it++)
+	ofstream os1("goto1.txt");
+	for (vector<int*>::iterator its = sa.moveto.begin(); its != sa.moveto.end(); ++its)
 	{
 		for (int i = 0; i < sa.snmap.size()-MACRONUM; i++)
 		{
-				os1 << (*it)[i] << '\t';
+			os1 << (*its)[i] << '\t';
 		}
-		os1 << "\n";
+		os1 << '\n';
 	}
-	os.close();*/
+	os1.close();*/
 	int b = clock();
 	cout << 1.0 * (b - a) / CLOCKS_PER_SEC;
 	return 0;

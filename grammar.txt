@@ -1,17 +1,25 @@
-^ Typ -> $INT | $CHAR @
-^ Exp -> + Exp | - Exp | Exp + Exp | Exp * Exp | Exp / Exp | Exp % Exp | Exp ++ | Exp -- | $B4 | $B1 | ( Exp ) | Exp && Exp | Exp || Exp | ! Exp | Exp < Exp | Exp <= Exp | Exp > Exp | Exp >= Exp | Exp != Exp @
-^ As1 -> $ID = Exp ; | $ID ; @
+^ Bod -> $B4 | $B1 | $ID @
+^ Bol -> Bod | Bod > Bod | Bod >= Bod | Bod < Bod | Bod <= Bod | Bod == Bod | Bod != Bod | ! Bod | Bod && Bod | Bod || Bod | ( Bod ) @
 ^ Tup -> Exp , Tup | Exp @
-^ Lst -> { Tup } ; @
-^ As2 -> $ID [ $B4 ] ; | $ID [ ] = Lst ; | $ID [ $B4 ] = Lst ; | $ID [ ] = $STR ; | $ID [ $B4 ] = $STR ; @
+^ Lst -> { Tup } @
+^ As1 -> $ID = Exp | $ID @
+^ Poe -> Bod | Bod ++ | Bod -- @
+^ Mue -> Poe | Mue * Poe | Mue / Poe | Mue % Poe @
+^ Typ -> $INT | $CHAR @
+^ Exp -> Mue | Exp + Mue | Exp - Mue @
+^ As2 -> $ID [ $B4 ] | $ID [ ] = Lst | $ID [ $B4 ] = Lst | $ID [ ] = $STR | $ID [ $B4 ] = $STR @
 ^ Ass -> As1 | As2 @
-^ Dec -> Typ Ass @
-^ Sta -> Dec | Ass | Exp ; | Ifb | Fob | Whb | Ret | ; | Sta Sta @
-^ Eif -> $ELSE $IF ( Exp ) { Sta } | Eif @
-^ Ifb -> $IF ( Exp ) { Sta } | $IF ( Exp ) { Sta } $ELSE { Sta } | $IF ( Exp ) { Sta } Eif $ELSE { Sta } | $IF ( Exp ) { Sta } Eif @
+^ Dec -> Typ Ass ; @
+^ Ids -> $ID | $ID , Ids @
+^ Prt -> $PRINTF ( $STR , Ids ) ; @
+^ Sta -> As1 ; | Exp ; | Ifb | Fob | Whb | Ret | Prt | ; @
+^ Blk -> Dec | Sta @
+^ Bkl -> Blk | Bkl Blk @
+^ Eif -> $ELSE $IF ( Bol ) { Sta } | $ELSE $IF ( Bol ) { Sta } Eif @
+^ Ifb -> $IF ( Bol ) { Sta } | $IF ( Bol ) { Sta } $ELSE { Sta } | $IF ( Bol ) { Sta } Eif $ELSE { Sta } | $IF ( Bol ) { Sta } Eif @
 ^ Stl -> Sta | $CONTINUE ; | $BREAK ; @
-^ Fob -> $FOR ( Ass ; Exp ; Exp ) { Stl } @
-^ Whb -> $WHILE ( Exp ) { Stl } @
+^ Fob -> $FOR ( As1 ; Bol ; Exp ) { Stl } @
+^ Whb -> $WHILE ( Bol ) { Stl } @
 ^ Ret -> $RETURN Exp ; @
 ^ Vls -> Typ $ID | Typ $ID , Vls @
-^ S -> Typ $MAIN ( Vls ) { Sta Ret } @
+^ S -> Typ $MAIN ( Vls ) { Bkl } @

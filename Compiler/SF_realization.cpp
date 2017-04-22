@@ -51,6 +51,7 @@ int Ep_Closure::have_item(LR1_Item& item)
 	//int hash = item.hash;//包含了pos，生成式
 	//int symbol = item.symbol;//包含展望符
 	if (hash_set.find(pair<int,int>(item.hash,item.symbol)) != hash_set.end())//找到hash
+	//if (LR1_items.find(pair<int,int>(item.hash,item.symbol))!=LR1_items.end())
 		return 0;
 	return -1;
 	/*for (int j = 0; j < this->hash_set.size(); j++)
@@ -83,6 +84,7 @@ void Ep_Closure::add_item(LR1_Item* item)
 {
 	hash += item->hash + item->symbol;
 	LR1_items.push_back(item);
+	//LR1_items.insert(pair<pair<int, int>, LR1_Item*>(pair<int,int>(item->hash, item->symbol), item));
 	hash_set.insert(pair<int,int>(item->hash,item->symbol));
 	item_num++;
 }

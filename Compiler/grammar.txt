@@ -1,25 +1,27 @@
-^ Bod -> $B4 | $B1 | $ID @
-^ Bol -> Bod | Bod > Bod | Bod >= Bod | Bod < Bod | Bod <= Bod | Bod == Bod | Bod != Bod | ! Bod | Bod && Bod | Bod || Bod | ( Bod ) @
-^ Tup -> Exp , Tup | Exp @
-^ Lst -> { Tup } @
-^ As1 -> $ID = Exp | $ID @
-^ Poe -> Bod | Bod ++ | Bod -- @
+^ Pre -> $B4 | $B1 | $ID @
+^ Poe -> Pre | Poe ++ | Poe -- @
 ^ Mue -> Poe | Mue * Poe | Mue / Poe | Mue % Poe @
-^ Typ -> $INT | $CHAR @
-^ Exp -> Mue | Exp + Mue | Exp - Mue @
-^ As2 -> $ID [ $B4 ] | $ID [ ] = Lst | $ID [ $B4 ] = Lst | $ID [ ] = $STR | $ID [ $B4 ] = $STR @
-^ Ass -> As1 | As2 @
+^ Ade -> Mue | Ade + Mue | Ade - Mue @
+^ Ree -> Pre | Ree < Pre | Ree > Pre | Ree <= Pre | Ree >= Pre @
+^ Eqe -> Ree | Eqe == Ree | Eqe != Ree @
+^ Ane -> Eqe | Ane && Eqe @
+^ Ore -> Ane | Ore || Ane @
 ^ Dec -> Typ Ass ; @
+^ Typ -> $INT | $CHAR @
+^ Ass -> As1 | As2 @
+^ As1 -> $ID = Ade | $ID @
+^ As2 -> $ID Arr = Lst | $ID Arr = $STR @
+^ Lst -> Ls1 | Ls2 @ 
+^ Ls1 -> { Pre , Ls1 } | Pre @
+^ Ls2 -> { Ls1 , Ls2 } | Ls1 @
+^ Arr -> [ ] | [ ] [ ] | [ $B4 ] | [ $B4 ] [ $B4 ] @
+^ Sta -> As1 ; | Ade ; | Ifb | Fob | Whb | Ret | Prt | ; @
+^ Des -> Dec | Des Dec @
+^ Blk -> Sta | Blk Sta | { Blk } @
+^ Ifb -> $IF ( Ore ) Blk | $IF ( Ore ) Blk $ELSE Blk @
+^ Fob -> $FOR ( As1 ; Ore ; Ade ) Blk @
+^ Whb -> $WHILE ( Ore ) Blk @
 ^ Ids -> $ID | $ID , Ids @
 ^ Prt -> $PRINTF ( $STR , Ids ) ; @
-^ Sta -> As1 ; | Exp ; | Ifb | Fob | Whb | Ret | Prt | ; @
-^ Blk -> Dec | Sta @
-^ Bkl -> Blk | Bkl Blk @
-^ Eif -> $ELSE $IF ( Bol ) { Sta } | $ELSE $IF ( Bol ) { Sta } Eif @
-^ Ifb -> $IF ( Bol ) { Sta } | $IF ( Bol ) { Sta } $ELSE { Sta } | $IF ( Bol ) { Sta } Eif $ELSE { Sta } | $IF ( Bol ) { Sta } Eif @
-^ Stl -> Sta | $CONTINUE ; | $BREAK ; @
-^ Fob -> $FOR ( As1 ; Bol ; Exp ) { Stl } @
-^ Whb -> $WHILE ( Bol ) { Stl } @
-^ Ret -> $RETURN Exp ; @
-^ Vls -> Typ $ID | Typ $ID , Vls @
-^ S -> Typ $MAIN ( Vls ) { Bkl } @
+^ Ret -> $RETURN Ade ; @
+^ S -> Typ $MAIN ( ) { Des Blk } @

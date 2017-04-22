@@ -86,6 +86,7 @@ void syntax_analyser::production_reader()
 	for (int i = 0; i < production_list.size(); i++)
 	{
 		pos = (production_list[i])->production[0];
+		//cout << pos << "  " << i << "  " << pos - MACRONUM << '\n';
 		if (pos != i + MACRONUM)
 			swap(production_list[i], production_list[pos - MACRONUM]);
 	}
@@ -190,6 +191,7 @@ Ep_Closure* syntax_analyser::getclosure(Ep_Closure* ep)
 	ep->hash_set_s.push_back(item->hash_s);*/
 	int itnum, t, exist;
 	vector<LR1_Item*> * p = &(ep->LR1_items);//I的LR1项目集
+	//map<pair<int, int>, LR1_Item*>::iterator p = ep->LR1_items.begin();
 	vector<int> * q = NULL;
 	vector<int>::iterator it;
 	LR1_Item * lr = NULL;
@@ -198,10 +200,14 @@ Ep_Closure* syntax_analyser::getclosure(Ep_Closure* ep)
 	{
 		itnum = ep->item_num;
 		for (int i = 0; i < p->size(); i++)//对C的循环
+		//for (p;p != ep->LR1_items.end();p++)
 		{
 			q = &(p->at(i)->production);//LR1项目的生成式
+			//q = &((*p).second->production);
 			t = p->at(i)->symbol;//展望符
+			//t = (*p).second->symbol;
 			it = q->begin() + p->at(i)->pos;//点的位置
+			//it = q->begin() + (*p).second->pos;
 			if (it == q->end() - 1) continue;
 			it++;
 			if (*it >= MACRONUM)
@@ -328,18 +334,23 @@ Ep_Closure* syntax_analyser::go(Ep_Closure* ep, int x)
 {
 	Ep_Closure * epc = new Ep_Closure;//J
 	vector<LR1_Item*>* lr = &(ep->LR1_items);
+	//map<pair<int, int>, LR1_Item*>* lr = &(ep->LR1_items);
 	vector<int>* p = NULL;
 	LR1_Item* q = NULL;
 	for (vector<LR1_Item*>::iterator it = lr->begin(); it != lr->end(); ++it)
+	//for (map<pair<int, int>, LR1_Item*>::iterator it = lr->begin(); it != lr->end(); ++it)
 	{
 		p = &((*it)->production);
+		//p = &((*it).second->production);
 		for (vector<int>::iterator i = p->begin() + 2; i != p->end(); ++i)
 		{
 			if (*i != x) continue;
 			if (i - p->begin() == (*it)->pos + 1)
+			//if (i - p->begin() == (*it).second->pos + 1)
 			{
 				q = new LR1_Item;
 				q->copy(*it);
+				//q->copy((*it).second);
 				q->pos++;
 				q->hash += 7;
 				epc->add_item(q);
@@ -422,14 +433,18 @@ void syntax_analyser::makelist()
 	{
 		ec = lrc->epset[i];//Ik
 		for (vector<LR1_Item*>::iterator it = ec->LR1_items.begin(); it != ec->LR1_items.end(); ++it)
+		//for (map<pair<int, int>, LR1_Item*>::iterator it = ec->LR1_items.begin(); it != ec->LR1_items.end(); ++it)
 		{
 			if ((*it)->hash == fhash && (*it)->symbol == -3)//forth if
+			//if ((*it).second->hash == fhash && (*it).second->symbol == -3)//forth if
 			{
 				*(action[i] + MACRONUM) = ACC;
 				continue;
 			}
 			pd = &((*it)->production);
+			//pd = &((*it).second->production);
 			itr = pd->begin() + (*it)->pos;
+			//itr = pd->begin() + (*it).second->pos;
 			for (int j = MACRONUM; j < snmap.size(); j++)
 			{
 				ne = go(ec, j);
@@ -455,14 +470,17 @@ void syntax_analyser::makelist()
 			else
 			{
 				phash = (*it)->production[0];
+				//phash = (*it).second->production[0];
 				phash *= phash;
 				phash--;
 				for (vector<int>::iterator ir = (*it)->production.begin() + 2; ir != (*it)->production.end(); ++ir)
+				//for (vector<int>::iterator ir = (*it).second->production.begin() + 2; ir != (*it).second->production.end(); ++ir)
 					phash += *ir;
 				git = grammar.find(phash);
 				if (git != grammar.end())//third if
 				{
 					sy = (*it)->symbol;
+					//sy = (*it).second->symbol;
 					if (sy == -3)
 						*(action[i] + MACRONUM) = -1 * (git->second->num);//rj
 					else
@@ -471,6 +489,13 @@ void syntax_analyser::makelist()
 			}
 		}
 	}
+	for (vector<Ep_Closure*>::iterator it = lrc->epset.begin(); it != lrc->epset.end(); ++it)
+	{
+		for (vector<LR1_Item*>::iterator i = (*it)->LR1_items.begin(); i != (*it)->LR1_items.end(); ++i)
+			delete (*i);
+		delete (*it);
+	}
+	delete lrc;
 }
 
 void syntax_analyser::analyser(deque<Token_Stream*>& token_stream)
@@ -516,7 +541,7 @@ void syntax_analyser::analyser(deque<Token_Stream*>& token_stream)
 		}
 		else
 		{
-			cout << *ip << "  ERROR!";
+			cout << stk.top().first << " " << macro << "  ERROR!";
 			break;
 		}
 	}
@@ -524,10 +549,10 @@ void syntax_analyser::analyser(deque<Token_Stream*>& token_stream)
 
 void syntax_analyser::readlist()
 {
-	ifstream is("action.txt");
+	ifstream is("action1.txt");
 	int * listline = NULL;
 	string s;
-	for (int j = 0; j < 261; j++)
+	for (int j = 0; j < 255; j++)
 	{
 		listline = new int[MACRONUM + 1];//vtnum+#(-3)
 		memset(listline, 0, (MACRONUM + 1) * sizeof(int));
@@ -539,12 +564,12 @@ void syntax_analyser::readlist()
 		action.push_back(listline);
 	}
 	is.close();
-	ifstream iss("goto.txt");
-	for (int j = 0; j < 261; j++)
+	ifstream iss("goto1.txt");
+	for (int j = 0; j < 255; j++)
 	{
 		listline = new int[snmap.size() - MACRONUM];//vnum
 		memset(listline, 0, (snmap.size() - MACRONUM) * sizeof(int));
-		for (int i = 0; i < 25; i++)
+		for (int i = 0; i < snmap.size() - MACRONUM; i++)
 		{
 			iss >> s;
 			*(listline + i) = atoi(s.c_str());
@@ -558,9 +583,9 @@ void syntax_analyser::excute(deque<Token_Stream*>& token_stream)
 {
 	production_reader();
 	getfirst();
-	getcollection();
-	//readlist();
-	makelist();
+	//getcollection();
+	readlist();
+	//makelist();
 	analyser(token_stream);
 }
 
