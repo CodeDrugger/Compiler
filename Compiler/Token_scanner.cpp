@@ -505,12 +505,13 @@ void token_scanner::token_install(int macrocode, int value, string &s, int mode)
 {
 	Token_Stream * ts = new Token_Stream;
 	ts->macrocode = macrocode;
+	pair<map<string, Token_List*>::iterator, bool> ret;
 	if (mode == 0)//标识符 字符串
 	{
 		Token_List * tl = new Token_List;
 		tl->name = string(s);
-		token_list.push_back(tl);
-		ts->attribute = (int)tl;
+		ret = token_list.insert(pair<string, Token_List*>(s, tl));
+		ts->attribute = (int)(*ret.first).second;
 	}
 	else if (mode == 1)//其他关键字
 	{
@@ -610,9 +611,9 @@ void token_scanner::show()
 		cout << token_stream.at(i)->macrocode << "  " << token_stream.at(i)->attribute << endl;
 	}
 	cout << "符号表" << endl;
-	for (int i = 0; i < token_list.size(); i++)
+	for (map<string, Token_List*>::iterator it = token_list.begin(); it != token_list.end(); ++it)
 	{
-		cout << &(token_list.at(i)->name) << "  " << token_list.at(i)->name << endl;
+		cout << &((*it).second) << "  " << (*it).first << '\n';
 	}
 }
 
@@ -620,7 +621,7 @@ void token_scanner::excute()
 {
 	this->prepare();
 	this->buffer_scanner();
-	//this->show();
+	this->show();
 }
 
 token_scanner::~token_scanner()

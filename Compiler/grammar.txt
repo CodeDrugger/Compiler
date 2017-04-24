@@ -17,10 +17,10 @@
 ^ Arr -> [ ] | [ ] [ ] | [ $B4 ] | [ $B4 ] [ $B4 ] @
 ^ Sta -> As1 ; | Ade ; | Ifb | Fob | Whb | Ret | Prt | ; @
 ^ Des -> Dec | Des Dec @
-^ Blk -> Sta | Blk Sta | { Blk } @
-^ Ifb -> $IF ( Ore ) Blk | $IF ( Ore ) Blk $ELSE Blk @
-^ Fob -> $FOR ( As1 ; Ore ; Ade ) Blk @
-^ Whb -> $WHILE ( Ore ) Blk @
+^ Blk -> Sta | Blk Sta @
+^ Ifb -> $IF ( Ore ) { Blk } | $IF ( Ore ) { Blk } $ELSE { Blk } @
+^ Fob -> $FOR ( As1 ; Ore ; Ade ) { Blk } @
+^ Whb -> $WHILE ( Ore ) { Blk } @
 ^ Ids -> $ID | $ID , Ids @
 ^ Prt -> $PRINTF ( $STR , Ids ) ; @
 ^ Ret -> $RETURN Ade ; @

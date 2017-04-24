@@ -134,3 +134,8 @@ int LR1_Collection::contain(Ep_Closure* item)
 	}
 	return -1;
 }
+
+Quadruple::Quadruple()
+{
+	memset(tuple, 0, sizeof(int*) * 4);
+}

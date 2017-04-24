@@ -12,7 +12,7 @@ public:
 	bool dq_mark;
 	std::ifstream ifs;
 	std::deque<Token_Stream*> token_stream;
-	std::deque<Token_List*> token_list;
+	std::map<std::string,Token_List*> token_list;
 
 	token_scanner();
 	void prepare();
@@ -54,6 +54,7 @@ public:
 	void analyser(std::deque<Token_Stream*>& token_stream);
 	void excute(std::deque<Token_Stream*>& token_stream);
 	void readlist();
+	void semeatic(int ac_item);
 	~syntax_analyser();
 };
 

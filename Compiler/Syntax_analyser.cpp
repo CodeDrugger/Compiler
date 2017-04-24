@@ -589,6 +589,14 @@ void syntax_analyser::excute(deque<Token_Stream*>& token_stream)
 	analyser(token_stream);
 }
 
+void syntax_analyser::semeatic(int ac_item)
+{
+	if (ac_item == 1)
+	{
+
+	}
+}
+
 syntax_analyser::~syntax_analyser()
 {
 	ifs.close();

@@ -5,6 +5,7 @@ int main()
 	char s[] = "asd\"as";
 	char ss = '\\'+'\''+'l' + '\n';
 	int i = 0;
+	int oo [2][2] = {{0,0},{1,1}};
 	if (c == 'e')
 	{
 		abc ++;//dsg

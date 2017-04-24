@@ -58,6 +58,18 @@ int main()
 	os1.close();*/
 	int b = clock();
 	cout << 1.0 * (b - a) / CLOCKS_PER_SEC;
+	/*for (vector<Production*>::iterator it = sa.grammar_p.begin()+1; it != sa.grammar_p.end(); ++it)
+	{
+		cout << (*it)->num << "  ";
+		for (vector<int>::iterator i = (*it)->production.begin(); i != (*it)->production.end(); ++i)
+		{
+			if ((*i)>0)
+				cout << *(sa.nsmap[*i]);
+			else
+				cout << "->";
+		}
+		cout << '\n';
+	}*/
 	return 0;
 }
 

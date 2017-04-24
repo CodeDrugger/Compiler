@@ -11,7 +11,10 @@ struct Token_Stream
 struct Token_List
 {
 	std::string name;
-	void * value;
+	bool isarray;
+	bool type;//0:char 1:int
+	int addr;//偏移
+	void * attr;//维数，各维长度
 };
 //文法生成式
 class Production
@@ -71,4 +74,22 @@ public:
 	void add_item(Ep_Closure* item);
 	bool have_item(Ep_Closure* item);
 	int contain(Ep_Closure* item);
+};
+//四元式
+class Quadruple
+{
+public:
+	int num;//序号
+	int* tuple[4];
+
+	Quadruple();
+};
+
+class Symbol_Table
+{
+public:
+	int op;
+	int arg1;
+	int arg2;
+	int result;
 };
