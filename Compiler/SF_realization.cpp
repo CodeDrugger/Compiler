@@ -2,6 +2,15 @@
 
 using namespace std;
 
+Token_List::Token_List()
+{
+	checked = 0;
+	//value = 0;
+	isarray = -1;
+	type = -1;
+	off = -1;
+}
+
 Production::Production()
 {
 	hash = 0;
@@ -135,7 +144,39 @@ int LR1_Collection::contain(Ep_Closure* item)
 	return -1;
 }
 
-Quadruple::Quadruple()
+Attribute_Table::Attribute_Table(int x)
 {
-	memset(tuple, 0, sizeof(int*) * 4);
+	this->x = x;
+	isarray = 0;
+	addr = -1;
+	value = 0;
+	//type = -1;
+	others = 0;
+	offset = -1;
+}
+
+void Attribute_Table::copy(const Attribute_Table& at)
+{
+	//this->type = at.type;
+	this->addr = at.addr;
+	this->value = at.value;
+	this->others = at.others;
+	this->isarray = at.isarray;
+	this->offset = at.offset;
+}
+
+Quadruple::Quadruple(int num, int op, int arg1, int arg2, int result)
+{
+	this->num = num;
+	this->op = op;
+	this->arg1 = arg1;
+	this->arg2 = arg2;
+	this->result = result;
+}
+
+FalseList::FalseList()
+{
+	num = 0;
+	insaddr = NULL;
+	next = NULL;
 }

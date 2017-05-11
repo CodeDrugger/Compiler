@@ -43,6 +43,13 @@ public:
 	LR1_Collection * lrc;
 	std::vector<int*> action;
 	std::vector<int*> moveto;
+	int semeatic_error;//”Ô“Â¥ÌŒÛ
+	int offset;//œ‡∂‘∆´“∆
+	int toffset;
+	bool decdone;
+	std::vector<Quadruple*> threecode;
+	bool floopstart,wloopstart;
+	std::stack<int> floopjumpback,wloopjumpback;
 
 	syntax_analyser();
 	void production_reader();
@@ -51,10 +58,11 @@ public:
 	Ep_Closure* go(Ep_Closure* ep, int x);
 	void getcollection();
 	void makelist();
-	void analyser(std::deque<Token_Stream*>& token_stream);
-	void excute(std::deque<Token_Stream*>& token_stream);
+	void analyser(std::deque<Token_Stream*>& token_stream, std::map<std::string, Token_List*>&token_list);
+	void excute(std::deque<Token_Stream*>& token_stream, std::map<std::string, Token_List*>&token_list);
 	void readlist();
-	void semeatic(int ac_item);
+	void semeatic(int ac_item, Attribute_Table * var, std::deque<Token_Stream*>::iterator &tsit, std::vector<Attribute_Table*> * atpoped);
+	void threecodeprinter();
 	~syntax_analyser();
 };
 

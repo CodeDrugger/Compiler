@@ -22,6 +22,8 @@ int wordclassify(string s)
 		return WHILE;
 	else if (s == "main")
 		return MAIN;
+	else if (s == "printf")
+		return PRINTF;
 	else
 		return ID;
 }

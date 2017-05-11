@@ -7,14 +7,19 @@ struct Token_Stream
 	int attribute;
 };
 
-//符号表项
-struct Token_List
+//符号表项，只有ID
+class Token_List
 {
+public:
 	std::string name;
-	bool isarray;
-	bool type;//0:char 1:int
-	int addr;//偏移
-	void * attr;//维数，各维长度
+	bool checked;
+	int isarray;
+	//int value;//貌似没必要
+	int type;//-1:init 0:char 1:int
+	int off;//偏移
+	int * attr;//维数，各维长度
+
+	Token_List();
 };
 //文法生成式
 class Production
@@ -75,21 +80,48 @@ public:
 	bool have_item(Ep_Closure* item);
 	int contain(Ep_Closure* item);
 };
+//属性表
+class Attribute_Table
+{
+public:
+	int x;//v,t的内部序号
+	int isarray;
+	int offset;
+	int addr;//当type是2时指向(符号表的地址)
+	int value;//变量的值也要维护
+	//int type;//0:char 1:int
+	std::map<int, int> * others;//属性编号,属性值
+	/*
+	0:数组第一维的维数
+	1:数组第二维的维数
+	//2:Ore自己所在的三地址码序号
+	3:Ore的falselist
+	4:规约到blk时的threecode.size(),就是goto的插入点
+	*/
+	Attribute_Table(int x);
+	void copy(const Attribute_Table& at);
+};
+
 //四元式
 class Quadruple
 {
 public:
 	int num;//序号
-	int* tuple[4];
-
-	Quadruple();
-};
-
-class Symbol_Table
-{
-public:
 	int op;
 	int arg1;
 	int arg2;
 	int result;
+
+	Quadruple(int num, int op, int arg1, int arg2, int result);
+};
+
+//falselist
+class FalseList
+{
+public:
+	int num;
+	int * insaddr;
+	FalseList * next;
+
+	FalseList();
 };

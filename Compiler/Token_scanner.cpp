@@ -508,10 +508,18 @@ void token_scanner::token_install(int macrocode, int value, string &s, int mode)
 	pair<map<string, Token_List*>::iterator, bool> ret;
 	if (mode == 0)//标识符 字符串
 	{
-		Token_List * tl = new Token_List;
-		tl->name = string(s);
-		ret = token_list.insert(pair<string, Token_List*>(s, tl));
-		ts->attribute = (int)(*ret.first).second;
+		if (macrocode == STR)
+		{
+			string * str = new string(s);
+			ts->attribute = (int)str;
+		}
+		else if (macrocode == ID)
+		{
+			Token_List * tl = new Token_List;
+			tl->name = string(s);
+			ret = token_list.insert(pair<string, Token_List*>(s, tl));
+			ts->attribute = (int)(*ret.first).second;
+		}		
 	}
 	else if (mode == 1)//其他关键字
 	{
@@ -621,7 +629,7 @@ void token_scanner::excute()
 {
 	this->prepare();
 	this->buffer_scanner();
-	this->show();
+	//this->show();
 }
 
 token_scanner::~token_scanner()

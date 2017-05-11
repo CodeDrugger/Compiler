@@ -10,7 +10,7 @@ int main()
 	token_scanner ts;
 	ts.excute();
 	syntax_analyser sa;
-	sa.excute(ts.token_stream);
+	sa.excute(ts.token_stream,ts.token_list);
 	/*sa.getfirst();
 	sa.getcollection();
 	sa.makelist();

@@ -56,5 +56,13 @@
 #define		PRINTF		42
 //终结符数量
 #define		MACRONUM	43
+//三地址码中的符号
+#define		JMP			50
+#define		IFISGO		51
+#define		GOTO		52
+#define		PRT			53
+#define		INASS		54
+//临时变量的起始地址
+#define		TEMPOFFSET	1000
 //action表中的ACC
 #define		ACC			10000

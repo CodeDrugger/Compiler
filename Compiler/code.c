@@ -1,30 +1,23 @@
 int main()
 {
-	int abc = 2;
-	char c = 'e';/*asf*/
-	char s[] = "asd\"as";
-	char ss = '\\'+'\''+'l' + '\n';
-	int i = 0;
-	int oo [2][2] = {{0,0},{1,1}};
-	if (c == 'e')
+	int a;
+	int b;
+	int d;
+	int c[3];
+	;
+	a = 95;
+	c[0] = a;
+	c[1] = a + 1;
+	c[2] = a + 2;
+	for (b = 0;b < 3;b++)
 	{
-		abc ++;//dsg
-	}	
-	while (1)
-	{
-		abc ++;
+		d = c[b];
+		a = a + d;
 	}
-	abc = 0xffffffff;
-	/*
-	sgs
-	*/
-	for (i;i < 100; i++)
+	while (b > 0)
 	{
-		i = i +1;
+		a++;
+		b++;
 	}
-	if (i > 0)
-	{
-		i = abc - i;
-	}
-return 0;
+	return 0;
 }

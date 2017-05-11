@@ -23,6 +23,12 @@ syntax_analyser::syntax_analyser()
 		snmap.insert(p[i]);
 	for (int i = 0; i < 43; i++)
 		nsmap.at(i) = &s[i];
+	semeatic_error = 0;
+	offset = 4;
+	decdone = 0;
+	toffset = TEMPOFFSET;
+	floopstart = 0;
+	wloopstart = 0;
 }
 
 void syntax_analyser::production_reader()
@@ -267,63 +273,6 @@ Ep_Closure* syntax_analyser::getclosure(Ep_Closure* ep)
 						}
 					}
 				}
-				/*Production * s = NULL;
-				for (int j = 0; j < production_list.size(); j++)
-				{
-					if (production_list[j]->production[0] == *it)
-					{
-						s = production_list[j];
-						break;
-					}
-				}
-				set<int>* first = first_set.find(*it)->second;//*it-macronum
-				LR1_Item * lr = NULL;
-				vector<int>::iterator start, end;
-				for (set<int>::iterator i = first->begin(); i != first->end(); i++)
-				{
-					start = s->production.begin();
-					end = start;
-					while (true)
-					{
-						start++;
-						if (*start == -1)
-						{
-							start++;
-							end = start;
-						}
-						else if (*start == -2 && start == s->production.end())
-						{
-							lr = new LR1_Item;
-							lr->production.push_back(*it);
-							lr->production.push_back(-1);
-							lr->pos = lr->production.begin() + 1;
-							lr->hash += (*it - 1) * (*it - 1);
-							while (end != start)
-							{
-								lr->production.push_back(*end);
-								lr->hash += *end;
-								end++;
-							}
-							lr->symbol.push_back(*i);
-							lr->hash_s += (*i);
-							int exist = ep->have_item(*lr);
-							if (exist == -1)//不存在
-								ep->add_item(lr);
-							else if (exist == 0)//存在
-								delete lr;
-							else//心存在，展望符不存在
-							{
-								LR1_Item* r = ep->LR1_items[exist];
-								r->symbol.push_back(*i);
-								r->hash_s += (*i);
-								delete lr;
-							}
-							if (end == s->production.end()) break;
-						}
-					}
-				}
-			}
-		}*/
 			}
 		}
 	} while (itnum != ep->item_num);
@@ -338,7 +287,7 @@ Ep_Closure* syntax_analyser::go(Ep_Closure* ep, int x)
 	vector<int>* p = NULL;
 	LR1_Item* q = NULL;
 	for (vector<LR1_Item*>::iterator it = lr->begin(); it != lr->end(); ++it)
-	//for (map<pair<int, int>, LR1_Item*>::iterator it = lr->begin(); it != lr->end(); ++it)
+		//for (map<pair<int, int>, LR1_Item*>::iterator it = lr->begin(); it != lr->end(); ++it)
 	{
 		p = &((*it)->production);
 		//p = &((*it).second->production);
@@ -346,7 +295,7 @@ Ep_Closure* syntax_analyser::go(Ep_Closure* ep, int x)
 		{
 			if (*i != x) continue;
 			if (i - p->begin() == (*it)->pos + 1)
-			//if (i - p->begin() == (*it).second->pos + 1)
+				//if (i - p->begin() == (*it).second->pos + 1)
 			{
 				q = new LR1_Item;
 				q->copy(*it);
@@ -433,7 +382,7 @@ void syntax_analyser::makelist()
 	{
 		ec = lrc->epset[i];//Ik
 		for (vector<LR1_Item*>::iterator it = ec->LR1_items.begin(); it != ec->LR1_items.end(); ++it)
-		//for (map<pair<int, int>, LR1_Item*>::iterator it = ec->LR1_items.begin(); it != ec->LR1_items.end(); ++it)
+			//for (map<pair<int, int>, LR1_Item*>::iterator it = ec->LR1_items.begin(); it != ec->LR1_items.end(); ++it)
 		{
 			if ((*it)->hash == fhash && (*it)->symbol == -3)//forth if
 			//if ((*it).second->hash == fhash && (*it).second->symbol == -3)//forth if
@@ -474,7 +423,7 @@ void syntax_analyser::makelist()
 				phash *= phash;
 				phash--;
 				for (vector<int>::iterator ir = (*it)->production.begin() + 2; ir != (*it)->production.end(); ++ir)
-				//for (vector<int>::iterator ir = (*it).second->production.begin() + 2; ir != (*it).second->production.end(); ++ir)
+					//for (vector<int>::iterator ir = (*it).second->production.begin() + 2; ir != (*it).second->production.end(); ++ir)
 					phash += *ir;
 				git = grammar.find(phash);
 				if (git != grammar.end())//third if
@@ -498,20 +447,25 @@ void syntax_analyser::makelist()
 	delete lrc;
 }
 
-void syntax_analyser::analyser(deque<Token_Stream*>& token_stream)
+void syntax_analyser::analyser(deque<Token_Stream*>& token_stream, map<std::string, Token_List*>&token_list)
 {
-	stack<pair<int, int>> stk;
-	stk.push(pair<int, int>(0, -3));
+	//unchecked_id = token_list.size();
+	stack<pair<int, Attribute_Table*>> stk;
+	Attribute_Table * at = new Attribute_Table(-3);
+	stk.push(pair<int, Attribute_Table*>(0, at));
 	Token_Stream * t = new Token_Stream;
 	t->macrocode = -3;
 	t->macrocode = 0;
 	token_stream.push_back(t);
-	deque<Token_Stream*>::iterator ip = token_stream.begin();
+	deque<Token_Stream*>::iterator ip = token_stream.begin(), id_tmp = ip;
 	int ac_item, macro, ps;
 	vector<int> * pro = NULL;
 	while (true)
 	{
+		if (semeatic_error) break;
 		macro = (*ip)->macrocode;
+		if (macro == ID)
+			id_tmp = ip;
 		if (macro > 0)
 			ac_item = *(action[stk.top().first] + macro);
 		else
@@ -520,16 +474,31 @@ void syntax_analyser::analyser(deque<Token_Stream*>& token_stream)
 			break;
 		else if (ac_item > 0)//Si
 		{
-			stk.push(pair<int, int>(ac_item, macro));
+			Attribute_Table * t = new Attribute_Table(macro);
+			stk.push(pair<int, Attribute_Table*>(ac_item, t));
 			++ip;
 		}
 		else if (ac_item < 0)//ri
 		{
+			vector<Attribute_Table*> * atpoped = new vector<Attribute_Table*>;
 			pro = &(grammar_p[-1 * ac_item]->production);
 			for (int i = 0; i < pro->size() - 2; i++)
+			{
+				Attribute_Table* tmp = stk.top().second;
+				atpoped->push_back(tmp);
 				stk.pop();
+			}
 			ps = pro->at(0);//A
-			stk.push(pair<int, int>(*(moveto[stk.top().first] + ps - MACRONUM), ps));
+			Attribute_Table * v = new Attribute_Table(ps);
+			stk.push(pair<int, Attribute_Table*>(*(moveto[stk.top().first] + ps - MACRONUM), v));
+			semeatic(ac_item, v, ip, atpoped);
+			for (vector<Attribute_Table*>::iterator is = atpoped->begin(); is != atpoped->end(); ++is)
+			{
+				if ((*is)->others != 0)
+					delete (*is)->others;
+				delete *is;
+			}
+			delete atpoped;
 			for (vector<int>::iterator it = pro->begin(); it != pro->end(); ++it)
 			{
 				if (*it > 0)
@@ -544,6 +513,11 @@ void syntax_analyser::analyser(deque<Token_Stream*>& token_stream)
 			cout << stk.top().first << " " << macro << "  ERROR!";
 			break;
 		}
+	}
+	while (!stk.empty())
+	{
+		delete stk.top().second;
+		stk.pop();
 	}
 }
 
@@ -579,23 +553,620 @@ void syntax_analyser::readlist()
 	iss.close();
 }
 
-void syntax_analyser::excute(deque<Token_Stream*>& token_stream)
+void syntax_analyser::excute(deque<Token_Stream*>& token_stream, map<string, Token_List*>& token_list)
 {
 	production_reader();
 	getfirst();
 	//getcollection();
 	readlist();
 	//makelist();
-	analyser(token_stream);
+	analyser(token_stream, token_list);
+	threecodeprinter();
 }
 
-void syntax_analyser::semeatic(int ac_item)
+void syntax_analyser::threecodeprinter()
 {
-	if (ac_item == 1)
+	cout << "三地址码:\n";
+	for (vector<Quadruple*>::iterator it = threecode.begin(); it != threecode.end(); ++it)
 	{
-
+		cout << (*it)->num << "  " << (*it)->op << "  " << (*it)->arg1 << "  " << (*it)->arg2 << "  " << (*it)->result << '\n';
 	}
 }
+
+/*
+ac_item表明规约的是第几个生成式
+var即V，生成式的左端，包含属性，规约完成后压入栈中
+ts是发生规约前输入的最后一个字符
+grammar_p[ac_item].at(0) = var->x
+*/
+void syntax_analyser::semeatic(int ac_item, Attribute_Table * var, std::deque<Token_Stream*>::iterator &tsit, std::vector<Attribute_Table*> * atpoped)
+{
+	Token_List * tl = NULL;
+	Quadruple * q = NULL;
+	deque<Token_Stream*>::iterator tst;
+	map<int, int>* mp = NULL;
+	map<int, int>::iterator it;
+	int fst, scd = 1;
+	string * str = NULL;
+	FalseList * flist = NULL, *ftmp = NULL;
+	ac_item *= -1;
+	if ((*tsit)->macrocode == FOR)
+		floopstart = 1;
+	if ((*tsit)->macrocode == WHILE)
+		wloopstart = 1;
+	if (wloopstart)
+	{
+		wloopjumpback.push(threecode.size());
+		wloopstart = 0;
+	}
+	switch (ac_item)
+	{
+	case 1://Pre->B4
+		//var->type = 1;
+		var->value = (*(tsit - 1))->attribute;
+		var->offset = toffset;
+		toffset += 4;
+		q = new Quadruple(threecode.size(), INASS, var->value, 0, var->offset);
+		threecode.push_back(q);
+		break;
+	case 2://Pre->B1
+		//var->type = 0;
+		var->value = (*(tsit - 1))->attribute;
+		var->offset = toffset;
+		toffset += 4;
+		q = new Quadruple(threecode.size(), INASS, var->value, 0, var->offset);
+		threecode.push_back(q);
+		break;
+	case 3://Pre->ID
+		tl = (Token_List *)(*(tsit - 1))->attribute;
+		//var->type = 2;
+		var->addr = (int)tl;
+		//if (!decdone)
+		//{
+			//tl->checked = 1;
+			//tl->off = offset;//
+			//var->offset = offset;
+			//offset += 4;//
+		//}
+		//else
+		//{
+		if (!tl->checked)
+		{
+			semeatic_error = 1;
+			break;
+		}
+		var->offset = toffset;
+		toffset += 4;
+		var->isarray = tl->isarray;
+		//var->value = tl->value;
+		//var->type = tl->type;
+		q = new Quadruple(threecode.size(), ASSIGN, tl->off, 0, var->offset);
+		threecode.push_back(q);
+		//}
+		break;
+	case 4://Poe->Pre
+		var->copy(*atpoped->at(0));
+		break;
+	case 5://Poe->Poe++
+		var->copy(*atpoped->at(1));
+		if (var->isarray)
+		{
+			semeatic_error = 1;
+			break;
+		}
+		//var->value++;
+		tl = (Token_List*)var->addr;
+		//tl->value++;//
+		q = new Quadruple(threecode.size(), INC, tl->off, 0, 0);
+		threecode.push_back(q);
+		break;
+	case 6://Poe->Poe--
+		var->copy(*atpoped->at(1));
+		if (var->isarray)
+		{
+			semeatic_error = 1;
+			break;
+		}
+		//var->value--;
+		tl = (Token_List*)var->addr;
+		//tl->value--;//
+		q = new Quadruple(threecode.size(), DEC, tl->off, 0, 0);
+		threecode.push_back(q);
+		break;
+	case 7://Mue->Poe
+		var->copy(*atpoped->at(0));
+		break;
+	case 8://Mue->Mue*Poe
+		var->copy(*atpoped->at(2));
+		if (var->isarray)
+		{
+			semeatic_error = 1;
+			break;
+		}
+		//var->value *= atpoped->at(2)->value;
+		var->offset = toffset;
+		toffset += 4;
+		q = new Quadruple(threecode.size(), MULTI, atpoped->at(2)->offset, atpoped->at(0)->offset, var->offset);
+		threecode.push_back(q);
+		break;
+	case 9://Mue->Mue/Poe
+		var->copy(*atpoped->at(2));
+		if (var->isarray)
+		{
+			semeatic_error = 1;
+			break;
+		}
+		//var->value /= atpoped->at(2)->value;
+		var->offset = toffset;
+		toffset += 4;
+		q = new Quadruple(threecode.size(), RDIV, atpoped->at(2)->offset, atpoped->at(0)->offset, var->offset);
+		threecode.push_back(q);
+		break;
+	case 10://Mue->Mue%Poe
+		var->copy(*atpoped->at(2));
+		if (var->isarray)
+		{
+			semeatic_error = 1;
+			break;
+		}
+		//var->value %= atpoped->at(2)->value;
+		var->offset = toffset;
+		toffset += 4;
+		q = new Quadruple(threecode.size(), MOD, atpoped->at(2)->offset, atpoped->at(0)->offset, var->offset);
+		threecode.push_back(q);
+		break;
+	case 11://Ade->Mue
+		var->copy(*atpoped->at(0));
+		break;
+	case 12://Ade->Ade+Mue
+		var->copy(*atpoped->at(2));
+		if (var->isarray)
+		{
+			semeatic_error = 1;
+			break;
+		}
+		//var->value += atpoped->at(2)->value;
+		var->offset = toffset;
+		toffset += 4;
+		q = new Quadruple(threecode.size(), PLUS, atpoped->at(2)->offset, atpoped->at(0)->offset, var->offset);
+		threecode.push_back(q);
+		break;
+	case 13://Ade->Ade-Mue
+		var->copy(*atpoped->at(2));
+		if (var->isarray)
+		{
+			semeatic_error = 1;
+			break;
+		}
+		//var->value -= atpoped->at(2)->value;
+		var->offset = toffset;
+		toffset += 4;
+		q = new Quadruple(threecode.size(), MINUS, atpoped->at(2)->offset, atpoped->at(0)->offset, var->offset);
+		threecode.push_back(q);
+		break;
+	case 14://Ree->Pre
+		var->copy(*atpoped->at(0));
+		break;
+	case 15://Ree->Ree<Pre
+		var->copy(*atpoped->at(2));
+		if (var->isarray)
+		{
+			semeatic_error = 1;
+			break;
+		}
+		//var->value = atpoped->at(2)->value;
+		//if (var->value < atpoped->at(2)->value)
+		//	var->value = 1;
+		//else
+		//	var->value = 0;
+		var->offset = toffset;
+		toffset += 4;
+		q = new Quadruple(threecode.size(), LT, atpoped->at(2)->offset, atpoped->at(0)->offset, var->offset);
+		threecode.push_back(q);
+		break;
+	case 16://Ree->Ree>Pre
+		var->copy(*atpoped->at(2));
+		if (var->isarray)
+		{
+			semeatic_error = 1;
+			break;
+		}
+		//var->value = atpoped->at(2)->value;
+		//if (var->value > atpoped->at(2)->value)
+		//	var->value = 1;
+		//else
+		//	var->value = 0;
+		var->offset = toffset;
+		toffset += 4;
+		q = new Quadruple(threecode.size(), GT, atpoped->at(2)->offset, atpoped->at(0)->offset, var->offset);
+		threecode.push_back(q);
+		break;
+	case 17://Ree->Ree<=Pre
+		var->copy(*atpoped->at(2));
+		if (var->isarray)
+		{
+			semeatic_error = 1;
+			break;
+		}
+		//var->value = atpoped->at(2)->value;
+		//if (var->value <= atpoped->at(2)->value)
+		//	var->value = 1;
+		//else
+		//	var->value = 0;
+		var->offset = toffset;
+		toffset += 4;
+		q = new Quadruple(threecode.size(), LE, atpoped->at(2)->offset, atpoped->at(0)->offset, var->offset);
+		threecode.push_back(q);
+		break;
+	case 18://Ree->Ree>=Pre
+		var->copy(*atpoped->at(2));
+		if (var->isarray)
+		{
+			semeatic_error = 1;
+			break;
+		}
+		//var->value = atpoped->at(2)->value;
+		//if (var->value >= atpoped->at(2)->value)
+		//	var->value = 1;
+		//else
+		//	var->value = 0;
+		var->offset = toffset;
+		toffset += 4;
+		q = new Quadruple(threecode.size(), GE, atpoped->at(2)->offset, atpoped->at(0)->offset, var->offset);
+		threecode.push_back(q);
+		break;
+	case 19://Eqe->Ree
+		var->copy(*atpoped->at(0));
+		break;
+	case 20://Eqe->Eqe==Ree
+		var->copy(*atpoped->at(2));
+		if (var->isarray)
+		{
+			semeatic_error = 1;
+			break;
+		}
+		//var->value = atpoped->at(2)->value;
+		//if (var->value == atpoped->at(2)->value)
+		//	var->value = 1;
+		//else
+		//	var->value = 0;
+		var->offset = toffset;
+		toffset += 4;
+		q = new Quadruple(threecode.size(), EQ, atpoped->at(2)->offset, atpoped->at(0)->offset, var->offset);
+		threecode.push_back(q);
+		break;
+	case 21://Eqe->Eqe!=Ree
+		var->copy(*atpoped->at(2));
+		if (var->isarray)
+		{
+			semeatic_error = 1;
+			break;
+		}
+		//var->value = atpoped->at(2)->value;
+		//if (var->value != atpoped->at(2)->value)
+		//	var->value = 1;
+		//else
+		//	var->value = 0;
+		var->offset = toffset;
+		toffset += 4;
+		q = new Quadruple(threecode.size(), NE, atpoped->at(2)->offset, atpoped->at(0)->offset, var->offset);
+		threecode.push_back(q);
+		break;
+	case 22://Ane->Eqe
+		var->copy(*atpoped->at(0));
+		break;
+	case 23://Ane->Ane&&Eqe
+		var->copy(*atpoped->at(2));
+		if (var->isarray)
+		{
+			semeatic_error = 1;
+			break;
+		}
+		//var->value = atpoped->at(2)->value;
+		//if (var->value && atpoped->at(2)->value)
+		//	var->value = 1;
+		//else
+		//	var->value = 0;
+		var->offset = toffset;
+		toffset += 4;
+		q = new Quadruple(threecode.size(), AND, atpoped->at(2)->offset, atpoped->at(0)->offset, var->offset);
+		threecode.push_back(q);
+		break;
+	case 24://Ore->Ane
+		var->copy(*atpoped->at(0));
+		if (!var->others)
+			var->others = new map<int, int>;
+		var->others->insert(pair<int, int>(2, threecode.size())); //2:Ore自己所在的三地址码序号
+		q = new Quadruple(threecode.size(), IFISGO, var->offset, 0, -1);
+		threecode.push_back(q);
+		mp = var->others;
+		it = mp->find(3); //3:falselist
+		if (it == mp->end())
+		{
+			flist = new FalseList;
+			flist->insaddr = &(q->result);
+			var->others->insert(pair<int, int>(3, (int)flist));
+		}
+		else
+		{
+			flist = (FalseList*)it->second;
+			ftmp = new FalseList;
+			ftmp->insaddr = &(q->result);
+			ftmp->num = flist->num + 1;
+			ftmp->next = flist;
+			it->second = (int)ftmp;
+		}
+		break;
+	case 25://Ore->Ore||Ane
+		var->copy(*atpoped->at(2));
+		//var->value = atpoped->at(2)->value;
+		//if (var->value || atpoped->at(2)->value)
+		//	var->value = 1;
+		//else
+		//	var->value = 0;
+		var->offset = toffset;
+		toffset += 4;
+		q = new Quadruple(threecode.size(), OR, atpoped->at(2)->offset, atpoped->at(0)->offset, var->offset);
+		threecode.push_back(q);
+		if (!var->others)
+			var->others = new map<int, int>;
+		var->others->insert(pair<int, int>(2, threecode.size()));//2:Ore自己所在的三地址码序号
+		q = new Quadruple(threecode.size(), IFISGO, var->offset, 0, -1);
+		threecode.push_back(q);
+		mp = var->others;
+		it = mp->find(3);//3:falselist
+		if (it == mp->end())
+		{
+			flist = new FalseList;
+			flist->insaddr = &(q->result);
+			var->others->insert(pair<int, int>(3, (int)flist));
+		}
+		else
+		{
+			flist = (FalseList*)it->second;
+			ftmp = new FalseList;
+			ftmp->insaddr = &(q->result);
+			ftmp->num = flist->num + 1;
+			ftmp->next = flist;
+			it->second = (int)ftmp;
+		}
+		break;
+	case 26://Dec->TypID;
+		tst = tsit - 1 - 1;
+		tl = (Token_List *)(*tst)->attribute;
+		//var->addr = (int)tl;
+		tl->isarray = 0;
+		tl->checked = 1;
+		tl->off = offset;
+		offset += 4;
+		//if (atpoped->at(1)->value == B4)
+		//	tl->type = 1;
+		//else
+		//	tl->type = 0;
+		break;
+	case 27://Dec->TypIDArr;
+		tst = tsit - 5;
+		if (!(*tst)->attribute)
+			tst = tsit - 8;
+		tl = (Token_List*)(*tst)->attribute;
+		tl->isarray = 1;
+		tl->checked = 1;
+		mp = atpoped->at(1)->others;
+		it = mp->find(0);//0:数组第一维的维数
+		fst = it->second;
+		scd = 1;
+		it = mp->find(1);//1:数组第二维的维数
+		if (it != mp->end())
+			scd = it->second;
+		tl->off = offset;
+		offset += 4 * fst * scd;
+		tl->attr = new int[3];
+		*(tl->attr + 1) = fst;
+		*(tl->attr + 2) = scd;
+		if (scd != 1)
+			*(tl->attr) = 2;
+		else
+			*(tl->attr) = 1;
+		//if (atpoped->at(3)->value == B4)
+			//tl->type = 1;
+		//else
+			//tl->type = 0;
+		break;
+	case 28://Typ->INT
+		//var->value = ts->macrocode;
+		break;
+	case 29://Typ->CHAR
+		//var->value = ts->macrocode;
+		break;
+	case 30://Arr->[Pre]
+		if (!var->others)
+			var->others = new map<int, int>;
+		var->others->insert(pair<int, int>(0, atpoped->at(1)->value));//应该要有
+		var->isarray = 1;
+		break;
+	case 31://Arr->[Pre][Pre]
+		if (!var->others)
+			var->others = new map<int, int>;
+		var->others->insert(pair<int, int>(0, atpoped->at(4)->value));
+		var->others->insert(pair<int, int>(1, atpoped->at(1)->value));
+		var->isarray = 1;
+		break;
+	case 32://Ras->Ra1
+
+		break;
+	case 33://Ras->Ra2
+
+		break;
+	case 34://Ra1->Idn=Ade
+		q = new Quadruple(threecode.size(), ASSIGN, atpoped->at(0)->offset, 0, atpoped->at(2)->offset);
+		threecode.push_back(q);
+		if (floopstart)
+		{
+			floopjumpback.push(threecode.size());
+			floopstart = 0;
+		}
+		break;
+	case 35://Ra2->IdnArr=Ade
+		mp = atpoped->at(2)->others;
+		it = mp->find(0);
+		fst = it->second;
+		scd = 1;
+		it = mp->find(1);
+		if (it != mp->end())
+			scd = it->second;
+		q = new Quadruple(threecode.size(), ASSIGN, atpoped->at(0)->offset, 0, atpoped->at(3)->offset + 4*fst*scd);
+		threecode.push_back(q);
+		break;
+	case 36://Ra2->Idn=IdnArr
+		mp = atpoped->at(0)->others;
+		it = mp->find(0);
+		fst = it->second;
+		scd = 1;
+		it = mp->find(1);
+		if (it != mp->end())
+			scd = it->second;
+		q = new Quadruple(threecode.size(), ASSIGN, atpoped->at(1)->offset + 4 * fst*scd, 0, atpoped->at(3)->offset);
+		threecode.push_back(q);
+		break;
+	case 37://Idn->ID
+		tl = (Token_List*)(*(tsit - 1))->attribute;
+		//tl->off = offset;
+		//offset += 4;
+		var->offset = tl->off;
+		break;
+	case 38://Sta->Ras;
+
+		break;
+	case 39://Sta->Poe;
+
+		break;
+	case 40://Sta->Ifb
+		toffset = TEMPOFFSET;
+		break;
+	case 41://Sta->Fob
+		toffset = TEMPOFFSET;
+		break;
+	case 42://Sta->Whb	
+		toffset = TEMPOFFSET;
+		break;
+	case 43://Sta->Ret
+		toffset = TEMPOFFSET;
+		break;
+	case 44://Sta->;
+		toffset = TEMPOFFSET;
+		break;
+	case 45://Sta->Re
+		toffset = TEMPOFFSET;
+		break;
+	case 46://Ifb->IF(Ore){Blk}
+		mp = atpoped->at(4)->others;
+		it = mp->find(3);
+		if (it == mp->end())
+		{
+			semeatic_error = 1;
+			break;
+		}
+		flist = (FalseList*)it->second;
+		while (flist != NULL)
+		{
+			*(flist->insaddr) = threecode.size();
+			flist = flist->next;
+		}
+		break;
+	case 47://Ifb->IF(Ore){Blk}ELSE{Blk}
+		mp = atpoped->at(5)->others;
+		it = mp->find(4);
+		q = new Quadruple(threecode.size(), GOTO, 0, 0, threecode.size());
+		threecode.push_back(q);
+		threecode.insert(threecode.begin() + it->second, q);
+		mp = atpoped->at(8)->others;
+		it = mp->find(3);
+		if (it == mp->end())
+		{
+			semeatic_error = 1;
+			break;
+		}
+		flist = (FalseList*)it->second;
+		while (flist != NULL)
+		{
+			*(flist->insaddr) = threecode.size();
+			flist = flist->next;
+		}
+		break;
+	case 48://Fob->FOR(Ra1;Ore;Ade){Blk}
+		mp = atpoped->at(6)->others;
+		q = new Quadruple(threecode.size(), GOTO, 0, 0, floopjumpback.top());//往ore跳	
+		floopjumpback.pop();
+		threecode.push_back(q);
+		it = mp->find(3);
+		if (it == mp->end())
+		{
+			semeatic_error = 1;
+			break;
+		}
+		flist = (FalseList*)it->second;
+		while (flist != NULL)
+		{
+			*(flist->insaddr) = threecode.size();
+			flist = flist->next;
+		}
+		break;
+	case 49://Whb->WHILE(Ore){Blk}
+		mp = atpoped->at(4)->others;
+		q = new Quadruple(threecode.size(), GOTO, 0, 0, wloopjumpback.top());//往ore跳
+		wloopjumpback.pop();
+		threecode.push_back(q);
+		it = mp->find(3);
+		if (it == mp->end())
+		{
+			semeatic_error = 1;
+			break;
+		}
+		flist = (FalseList*)it->second;
+		while (flist != NULL)
+		{
+			*(flist->insaddr) = threecode.size();
+			flist = flist->next;
+		}
+		break;
+	case 50://Ret->PRINTF(STR,Ids);
+		tst = tsit - 4 - 1;
+		str = (string*)(*tst)->attribute;
+		q = new Quadruple(threecode.size(), PRT, (int)str, atpoped->at(2)->offset, 0);
+		threecode.push_back(q);
+		break;
+	case 51://Re->RETURNAde;
+		q = new Quadruple(threecode.size(), RETURN, 0, 0, 0);
+		threecode.push_back(q);
+		break;
+	case 52://Des->Dec
+		break;
+	case 53://Des->DesDec
+		break;
+	case 54://Blk->Sta
+		if (!var->others)
+			var->others = new map<int, int>;
+		var->others->insert(pair<int, int>(4, threecode.size()));
+		break;
+	case 55://Blk->BlkSta
+		//toffset = TEMPOFFSET;
+		if (!var->others)
+			var->others = new map<int, int>;
+		var->others->insert(pair<int, int>(4, threecode.size()));
+		break;
+	case 56:
+		break;
+	case 57:
+		break;
+	case 58:
+		break;
+	default:
+		break;
+	}
+	if (semeatic_error)
+		cout << "SEMEATIC ERROR!";
+}
+//realsize dreamsize
 
 syntax_analyser::~syntax_analyser()
 {
