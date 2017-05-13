@@ -5,7 +5,6 @@ class token_scanner
 public:
 	char dbuffer[1024];
 	char *begin, *forward, *buffer_writer;
-	//char ch;
 	char token[32];
 	bool which_emtpy;
 	bool error;
@@ -43,12 +42,14 @@ public:
 	LR1_Collection * lrc;
 	std::vector<int*> action;
 	std::vector<int*> moveto;
+	std::vector<std::string*> stringlist;
 	int semeatic_error;//”Ô“Â¥ÌŒÛ
 	int offset;//œ‡∂‘∆´“∆
 	int toffset;
 	bool decdone;
 	std::vector<Quadruple*> threecode;
 	bool floopstart,wloopstart;
+	int maxtoffset;
 	std::stack<int> floopjumpback,wloopjumpback;
 
 	syntax_analyser();
@@ -64,6 +65,19 @@ public:
 	void semeatic(int ac_item, Attribute_Table * var, std::deque<Token_Stream*>::iterator &tsit, std::vector<Attribute_Table*> * atpoped);
 	void threecodeprinter();
 	~syntax_analyser();
+};
+
+class code_generator
+{
+public :
+	std::ofstream os;
+	std::map<int, std::string> adname;
+	int strnum;
+
+	code_generator();
+	void analyser(std::vector<Quadruple*>& threecode,std::map<std::string, Token_List*>& token_list,int maxoffset,std::vector<std::string*>& stringlist);
+	std::string conv(int addr);
+	~code_generator();
 };
 
 int wordclassify(std::string s);

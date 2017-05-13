@@ -1,23 +1,30 @@
 int main()
 {
-	int a;
-	int b;
-	int d;
-	int c[3];
-	;
-	a = 95;
-	c[0] = a;
-	c[1] = a + 1;
-	c[2] = a + 2;
-	for (b = 0;b < 3;b++)
+	int score;
+	int i;
+	int j;
+	int avg;
+	int temp;
+	int e[10];;
+	score = 60;
+	i = 0;
+	j = 0;
+	while (i < 10)
 	{
-		d = c[b];
-		a = a + d;
+		e[i] = score;
+		i++;
+		score++;
+		score++;
 	}
-	while (b > 0)
+	avg = 0;
+	while (j < 10)
 	{
-		a++;
-		b++;
+		temp = e[j];
+		avg = avg + temp;
+		j++;
 	}
+	printf("total score is:%d",avg);
+	avg = avg / 10;
+	printf("avg is :%d",avg);
 	return 0;
 }

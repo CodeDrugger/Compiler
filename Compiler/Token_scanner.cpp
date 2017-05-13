@@ -38,31 +38,7 @@ void token_scanner::prepare()
 			while (*buffer_writer == ' ' && ifs.peek() == ' ')
 				ifs.get(c);
 		}
-		if (*buffer_writer == '/')
-		{
-			if (ifs.peek() == '/')
-			{
-				do
-				{
-					ifs.get(c);
-				} while (c != '\n');
-			}
-			else if (ifs.peek() == '*')
-			{
-				do
-				{
-					ifs.get(c);
-					if (c == -1)
-					{
-						string s = "注释不封闭，错误发生在以下代码附近:";
-						error_handler(s);
-						return;
-					}
-				} while (!(c == '*' && ifs.peek() == '/'));
-			}
-			buffer_writer--;
-			i--;
-		}
+		
 		i++;
 		buffer_writer++;
 	}
@@ -629,7 +605,7 @@ void token_scanner::excute()
 {
 	this->prepare();
 	this->buffer_scanner();
-	//this->show();
+	this->show();
 }
 
 token_scanner::~token_scanner()

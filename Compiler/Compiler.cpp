@@ -11,6 +11,8 @@ int main()
 	ts.excute();
 	syntax_analyser sa;
 	sa.excute(ts.token_stream,ts.token_list);
+	code_generator cg;
+	cg.analyser(sa.threecode, ts.token_list, sa.maxtoffset,sa.stringlist);
 	/*sa.getfirst();
 	sa.getcollection();
 	sa.makelist();

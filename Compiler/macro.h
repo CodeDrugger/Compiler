@@ -62,6 +62,8 @@
 #define		GOTO		52
 #define		PRT			53
 #define		INASS		54
+#define		ATI			55
+#define		ITA			56
 //临时变量的起始地址
 #define		TEMPOFFSET	1000
 //action表中的ACC

@@ -152,6 +152,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Code_generator.cpp" />
     <ClCompile Include="Compiler.cpp" />
     <ClCompile Include="Functions.cpp" />
     <ClCompile Include="SF_realization.cpp" />

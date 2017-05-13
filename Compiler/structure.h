@@ -97,6 +97,7 @@ public:
 	//2:Ore自己所在的三地址码序号
 	3:Ore的falselist
 	4:规约到blk时的threecode.size(),就是goto的插入点
+	5:是不是ID，0：不是 1：是
 	*/
 	Attribute_Table(int x);
 	void copy(const Attribute_Table& at);

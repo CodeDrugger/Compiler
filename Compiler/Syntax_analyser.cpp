@@ -24,11 +24,12 @@ syntax_analyser::syntax_analyser()
 	for (int i = 0; i < 43; i++)
 		nsmap.at(i) = &s[i];
 	semeatic_error = 0;
-	offset = 4;
+	offset = 0;
 	decdone = 0;
 	toffset = TEMPOFFSET;
 	floopstart = 0;
 	wloopstart = 0;
+	maxtoffset = 0;
 }
 
 void syntax_analyser::production_reader()
@@ -449,7 +450,6 @@ void syntax_analyser::makelist()
 
 void syntax_analyser::analyser(deque<Token_Stream*>& token_stream, map<std::string, Token_List*>&token_list)
 {
-	//unchecked_id = token_list.size();
 	stack<pair<int, Attribute_Table*>> stk;
 	Attribute_Table * at = new Attribute_Table(-3);
 	stk.push(pair<int, Attribute_Table*>(0, at));
@@ -983,6 +983,9 @@ void syntax_analyser::semeatic(int ac_item, Attribute_Table * var, std::deque<To
 			var->others = new map<int, int>;
 		var->others->insert(pair<int, int>(0, atpoped->at(1)->value));//应该要有
 		var->isarray = 1;
+		var->offset = atpoped->at(1)->offset;
+		if (atpoped->at(1)->addr > 0)
+			var->others->insert(pair<int, int>(5, 1));
 		break;
 	case 31://Arr->[Pre][Pre]
 		if (!var->others)
@@ -1008,25 +1011,43 @@ void syntax_analyser::semeatic(int ac_item, Attribute_Table * var, std::deque<To
 		break;
 	case 35://Ra2->IdnArr=Ade
 		mp = atpoped->at(2)->others;
-		it = mp->find(0);
-		fst = it->second;
-		scd = 1;
-		it = mp->find(1);
-		if (it != mp->end())
-			scd = it->second;
-		q = new Quadruple(threecode.size(), ASSIGN, atpoped->at(0)->offset, 0, atpoped->at(3)->offset + 4*fst*scd);
-		threecode.push_back(q);
+		it = mp->find(5);
+		if (it == mp->end())
+		{
+			it = mp->find(0);
+			fst = it->second;
+			scd = 1;
+			it = mp->find(1);
+			if (it != mp->end())
+				scd = it->second;
+			q = new Quadruple(threecode.size(), ASSIGN, atpoped->at(0)->offset, 0, atpoped->at(3)->offset + 4 * fst*scd);
+			threecode.push_back(q);
+		}
+		else
+		{
+			q = new Quadruple(threecode.size(), ITA, atpoped->at(3)->offset, atpoped->at(2)->offset, atpoped->at(0)->offset);
+			threecode.push_back(q);
+		}
 		break;
 	case 36://Ra2->Idn=IdnArr
 		mp = atpoped->at(0)->others;
-		it = mp->find(0);
-		fst = it->second;
-		scd = 1;
-		it = mp->find(1);
-		if (it != mp->end())
-			scd = it->second;
-		q = new Quadruple(threecode.size(), ASSIGN, atpoped->at(1)->offset + 4 * fst*scd, 0, atpoped->at(3)->offset);
-		threecode.push_back(q);
+		it = mp->find(5);
+		if (it == mp->end())
+		{
+			it = mp->find(0);
+			fst = it->second;
+			scd = 1;
+			it = mp->find(1);
+			if (it != mp->end())
+				scd = it->second;
+			q = new Quadruple(threecode.size(), ASSIGN, atpoped->at(1)->offset + 4 * fst*scd, 0, atpoped->at(3)->offset);
+			threecode.push_back(q);
+		}
+		else
+		{			
+			q = new Quadruple(threecode.size(), ATI, atpoped->at(1)->offset, atpoped->at(0)->offset, atpoped->at(3)->offset);
+			threecode.push_back(q);
+		}
 		break;
 	case 37://Idn->ID
 		tl = (Token_List*)(*(tsit - 1))->attribute;
@@ -1132,8 +1153,10 @@ void syntax_analyser::semeatic(int ac_item, Attribute_Table * var, std::deque<To
 	case 50://Ret->PRINTF(STR,Ids);
 		tst = tsit - 4 - 1;
 		str = (string*)(*tst)->attribute;
-		q = new Quadruple(threecode.size(), PRT, (int)str, atpoped->at(2)->offset, 0);
+		tl = (Token_List*)atpoped->at(2)->addr;
+		q = new Quadruple(threecode.size(), PRT, stringlist.size(), tl->off, 0);
 		threecode.push_back(q);
+		stringlist.push_back(str);
 		break;
 	case 51://Re->RETURNAde;
 		q = new Quadruple(threecode.size(), RETURN, 0, 0, 0);
@@ -1154,7 +1177,8 @@ void syntax_analyser::semeatic(int ac_item, Attribute_Table * var, std::deque<To
 			var->others = new map<int, int>;
 		var->others->insert(pair<int, int>(4, threecode.size()));
 		break;
-	case 56:
+	case 56://Ids->Pre
+		var->copy(*atpoped->at(0));
 		break;
 	case 57:
 		break;
@@ -1163,6 +1187,8 @@ void syntax_analyser::semeatic(int ac_item, Attribute_Table * var, std::deque<To
 	default:
 		break;
 	}
+	if (toffset > maxtoffset)
+		maxtoffset = toffset;
 	if (semeatic_error)
 		cout << "SEMEATIC ERROR!";
 }
